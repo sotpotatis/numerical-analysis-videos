@@ -1,16 +1,14 @@
-"""method_of_least_squares.py
-Briefly explains the method of least squares for interpolation."""
+"""method_of_least_squares/part_1.py
+Briefly explains the method of least squares for interpolation.
+Part one includes graphically introducing the method of least squares."""
 
 from manim_slides.slide import ThreeDSlide
 import logging
 from typing import Optional, List, Union
 
 from manim import (
-    MathTex,
     Create,
     RIGHT,
-    UP,
-    ReplacementTransform,
     ValueTracker,
     Mobject,
     Arrow3D,
@@ -18,30 +16,17 @@ from manim import (
     RED,
     YELLOW,
     Tex,
-    WHITE,
-    GrowFromCenter,
     DR,
     VGroup,
     BackgroundRectangle,
     FadeIn,
     Line,
-    ORANGE,
 )
 from sympy import lambdify
 
 from helper_functions.equation_displaying import create_equation_with_border
-from helper_functions.general_utilities import (
-    clear_screen,
-    play_multiple,
-)
 from helper_functions.graph import SYMBOL_X
-from helper_functions.latex_utilities import (
-    create_cases,
-    create_matrix,
-)
-from helper_functions.loading.loading import LoadingSpinner
 from helper_functions.point_interpolation import (
-    interpolate_over,
     interpolation_coefficients_to_function_template,
 )
 from helper_functions.graph import AxesAndGraphHelper
@@ -52,18 +37,18 @@ from interpolation.shared_constants import (
     create_logger,
     CORNER_EQUATIONS_SCALE,
 )
-from interpolation.slide_sources.interpolation_equations import (
-    illustrate_interpolation_equations,
-    create_interpolation_matrix,
-)
 from interpolation.value_tracker_plotting import (
     generate_updater_for_plot_graph_according_to_constant_values,
     generate_updater_for_equation_related_to_constant_values,
 )
-from helper_functions.matrix_utilities import transpose_matrix
+from interpolation.slide_sources.method_of_least_squares.shared_constants import (
+    c1_real,
+    c2_real,
+    c3_real,
+)
 
 
-class MethodOfLeastSquares(ThreeDSlide):
+class MethodOfLeastSquaresPartOne(ThreeDSlide):
     def construct(self):
         create_logger(self)
         set_title_heading_to(self, "Minsta kvadratmetoden")
@@ -74,19 +59,16 @@ class MethodOfLeastSquares(ThreeDSlide):
         add_witch_of_agnesi_points(self, all_evaluated_points, animation_run_time=1)
         # Fit a 2nd degree polynomial to the 11 datapoints
         self.next_slide()
-        generic_polynomial_equation, generic_polynomial_equation_rectangle = (
-            create_equation_with_border("y=c_1x^2+c_2x+c_3")
-        )
+        (
+            generic_polynomial_equation,
+            generic_polynomial_equation_rectangle,
+        ) = create_equation_with_border("y=c_1x^2+c_2x+c_3")
         generic_polynomial_equation.to_edge(RIGHT)
         self.add(generic_polynomial_equation_rectangle)
         self.play(Create(generic_polynomial_equation))
         self.next_slide()
         self.play(ScaleInPlace(generic_polynomial_equation, CORNER_EQUATIONS_SCALE))
         self.next_slide()
-        # Calculate the real, true, best, whatever, line of best fit solution
-        c3_real, c2_real, c1_real = interpolate_over(
-            all_evaluated_points, polynomial_degree=2, line_of_best_fit=True
-        )
         self.logger.info(
             f"Fit a second degree polynomial to datapoints with coefficients: {c1_real}, {c2_real} and {c3_real}"
         )
@@ -194,151 +176,6 @@ class MethodOfLeastSquares(ThreeDSlide):
         for submobject in least_squares_polynomial_value_plot.submobjects:
             self.remove(submobject)
         self.add(least_squares_polynomial_value_plot)
-        self.logger.info("Rendering slides highlighting the calculations...")
-        # Show how to fit the polynomial
-        generic_equation_system, point_equation_system = (
-            illustrate_interpolation_equations(self, all_evaluated_points, 2)
-        )
-        self.next_slide()
-        clear_screen(self)
-        # Show the generic equation
-        generic_equation_system.move_to([0, 0, 0])
-        generic_equation_system.set_color(WHITE)
-        generic_equation_system.scale(2)
-        self.play(GrowFromCenter(generic_equation_system))
-        self.next_slide()
-        # Show how to rewrite the equation system in latex format
-        matrix_equation_system, matrix_equation_strings = create_interpolation_matrix(
-            all_evaluated_points, 2
-        )
-        a_matrix_values, x_matrix_values, b_matrix_values = matrix_equation_strings
-        self.play(ReplacementTransform(generic_equation_system, matrix_equation_system))
-        self.next_slide()
-        a_matrix_string = create_matrix(a_matrix_values)
-        x_matrix_string = create_matrix(x_matrix_values)
-        b_matrix_string = create_matrix(b_matrix_values)
-        # Highlight the names of the matricies
-        a_matrix_string = r"\underbrace{%s}_{\vec A}" % (a_matrix_string)
-        x_matrix_string = r"\underbrace{%s}_{\vec x}" % (x_matrix_string)
-        b_matrix_string = r"\underbrace{%s}_{\vec b}" % (b_matrix_string)
-        matrix_equation_system_with_highlighted_names = MathTex(
-            a_matrix_string + x_matrix_string + "=" + b_matrix_string
-        )
-        self.play(
-            ReplacementTransform(
-                matrix_equation_system, matrix_equation_system_with_highlighted_names
-            )
-        )
-        self.next_slide()
-        # Now, indicate that we multiply the left side with A transponse
-        matrix_equation_system_with_transpose_indication = MathTex(
-            "A^T" + a_matrix_string + x_matrix_string + "= A^T" + b_matrix_string
-        )
-        self.play(
-            ReplacementTransform(
-                matrix_equation_system_with_highlighted_names,
-                matrix_equation_system_with_transpose_indication,
-            )
-        )
-        self.next_slide()
-        # Now, write out the values of A transpose
-        a_matrix_transpose = transpose_matrix(a_matrix_values)
-        a_matrix_transpose_string = create_matrix(a_matrix_transpose)
-        a_matrix_transpose_string = r"\underbrace{%s}_{\vec A^T}" % (
-            a_matrix_transpose_string
-        )
-        matrix_equation_system_with_transpose_values = MathTex(
-            a_matrix_transpose_string
-            + a_matrix_string
-            + x_matrix_string
-            + f"= {a_matrix_transpose_string}"
-            + b_matrix_string
-        )
-        self.play(
-            ReplacementTransform(
-                matrix_equation_system_with_highlighted_names,
-                matrix_equation_system_with_transpose_values,
-            )
-        )
-        # Play animation of solving the system
-        loading_spinner = LoadingSpinner(
-            self, before_addition_function=lambda object: object.move_to([0, 0, 0])
-        )
-        loading_spinner.spin(duration=3)
-        self.remove(*loading_spinner.created_objects)
-        solution_equation_system = MathTex(
-            create_cases(
-                [f"c_1={c1_real}", f"c_2={c2_real}", f"c_3={c3_real}"],
-                include_math_environment_start=False,
-            )
-        )
-        self.play(
-            ReplacementTransform(
-                matrix_equation_system_with_transpose_values, solution_equation_system
-            )
-        )
-        self.next_slide()
-        clear_screen(self)
-        self.next_slide()
-        # Plot the resulting interpolating polynomial
-        self.axes.create_axes(self)
-        self.axes.plot_function(
-            graph_function=interpolation_coefficients_to_function_template(
-                [c3_real, c2_real, c1_real], SYMBOL_X
-            ),
-            range_to_use_for_function=[-10, 10],
-            input_variables=[SYMBOL_X],
-        )
-        rounded_coefficients = [
-            round(coefficient, 2) for coefficient in [c1_real, c2_real, c3_real]
-        ]
-        interpolation_polynomial_equation, interpolation_polynomial_equation_border = (
-            create_equation_with_border(
-                "y={}x^2+{}x+{}".format(*rounded_coefficients),
-                scale=CORNER_EQUATIONS_SCALE,
-            )
-        )
-        self.add(interpolation_polynomial_equation_border)
-        self.play(Create(interpolation_polynomial_equation))
-        self.next_slide()
-        # Show the general equation for least squares
-        clear_screen(self)
-        general_matrix_equation, general_matrix_equation_border = (
-            create_equation_with_border(r"\vec A\vec x =  \vec b", scale=1.5)
-        )
-        general_matrix_equation_group = VGroup(
-            general_matrix_equation, general_matrix_equation_border
-        )
-        self.play(GrowFromCenter(general_matrix_equation_group))
-        self.next_slide()
-        # Fade the general matrix equation into general least squares equation
-        general_least_squares_equation, general_least_squares_border = (
-            create_equation_with_border(
-                r"\vec A^T\vec A\vec x =  \vec A^T \vec b", scale=1.5
-            )
-        )
-        general_least_squares_equation_group = VGroup(
-            general_least_squares_equation, general_least_squares_border
-        )
-        self.play(
-            ReplacementTransform(
-                general_matrix_equation_group, general_least_squares_equation_group
-            )
-        )
-        self.next_slide()
-        # Add heading and explanation about how the method of least squares works
-        heading = Tex("Minsta kvadratmetoden", color=ORANGE)
-        heading.scale(1.5)
-        least_squares_explanation = Tex(
-            r"""Konstruera ett system av ekvationer för att interpolera över önskat antal punkter.
-        (se tidigare i videon)
-        Skriv om systemet på matrisform, där $\vec A$ är koefficientmatris och $\vec b$ är högerledsmatris. 
-        Låt $\vec x$ representera de sökta koefficienterna för interpolationspolynomet du vill skapa.
-        Ekvationssystemet som ska lösas ges då av:"""
-        )
-        least_squares_explanation.next_to(general_least_squares_equation, UP)
-        heading.next_to(least_squares_explanation, UP)
-        play_multiple(self, [least_squares_explanation, heading], Create)
 
     def create_residual_lines_updater(self, point: List[float]) -> callable:
         """Creates a value tracker that plot residual "lines" to the graph.
