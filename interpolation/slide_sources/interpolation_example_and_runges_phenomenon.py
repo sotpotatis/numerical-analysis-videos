@@ -49,16 +49,18 @@ class InterpolationExampleAndRungesPhenomenon(ThreeDSlide):
         self.next_slide()
         # Demonstrate the calculation of the polynomial coefficients
         # Bring back polynomial equation
-        polynomial_equation_second_degree, equation_rectangle_second_degree = (
-            create_equation_with_border("y=c_1x^2+c_2x+c_3", scale=1)
-        )
+        (
+            polynomial_equation_second_degree,
+            equation_rectangle_second_degree,
+        ) = create_equation_with_border("y=c_1x^2+c_2x+c_3", scale=1)
         self.add(equation_rectangle_second_degree)
         polynomial_equation_second_degree.to_corner(UR)
         self.play(Create(polynomial_equation_second_degree))
-        generic_equation_system, point_equation_system = (
-            illustrate_interpolation_equations(
-                self, evaluated_points, polynomial_degree=2
-            )
+        (
+            generic_equation_system,
+            point_equation_system,
+        ) = illustrate_interpolation_equations(
+            self, evaluated_points, polynomial_degree=2
         )
         generic_equation_system.set_color(WHITE)
         clear_screen(self, [generic_equation_system])
@@ -104,9 +106,10 @@ class InterpolationExampleAndRungesPhenomenon(ThreeDSlide):
         clear_screen(self)
         # Add final equation
         final_polynomial_function = f"y={c_1_interpolation_example}x^2{addition_string(c_2_interpolation_example)}x{addition_string(c_3_interpolation_example)}"
-        final_polynomial_equation, final_polynomial_equation_rectangle = (
-            create_equation_with_border(final_polynomial_function)
-        )
+        (
+            final_polynomial_equation,
+            final_polynomial_equation_rectangle,
+        ) = create_equation_with_border(final_polynomial_function)
         self.add(final_polynomial_equation, final_polynomial_equation_rectangle)
         self.next_slide()
         # Shrink final polynomial equation

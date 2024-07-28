@@ -48,9 +48,10 @@ class IntroductionSlide(ThreeDSlide):
         generic_polynomial_equation_group = VGroup(
             generic_polynomial_equation, equation_rectangle
         )
-        generic_polynomial_equation_alternate_notation, new_equation_rectangle = (
-            create_equation_with_border("y=c_1x+c_2")
-        )
+        (
+            generic_polynomial_equation_alternate_notation,
+            new_equation_rectangle,
+        ) = create_equation_with_border("y=c_1x+c_2")
         generic_polynomial_equation_alternate_notation_group = VGroup(
             generic_polynomial_equation_alternate_notation, new_equation_rectangle
         )

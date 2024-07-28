@@ -2,6 +2,7 @@
 Contains helper functions for displaying graphs."""
 
 import logging
+import warnings
 from typing import Callable, Optional, List, Tuple, Union
 
 from manim import (
@@ -20,6 +21,8 @@ from manim import (
     NumberPlane,
     Mobject,
     ReplacementTransform,
+    ManimColor,
+    DashedVMobject,
 )
 from numpy._typing import NDArray
 from sympy import Symbol, lambdify
@@ -113,7 +116,8 @@ class AxesAndGraphHelper:
         self.logger = logging.getLogger(__name__)
         self.create_axes(interval, x_label, y_label, z_label, is_r2, zoom=0.5)
         # Set camera orientation
-        self.scene_reference.move_camera(phi=phi, theta=theta, gamma=gamma)
+        if isinstance(self.scene_reference, ThreeDSlide):
+            self.scene_reference.move_camera(phi=phi, theta=theta, gamma=gamma)
 
     def create_axes(
         self,
@@ -157,7 +161,13 @@ class AxesAndGraphHelper:
             include_number_plane = True
         # Start by zooming out to avoid "choppy" effect
         if zoom is not None:
-            self.scene_reference.set_camera_orientation(zoom=zoom)
+            if hasattr(self.scene_reference, "set_camera_orientation"):
+                self.scene_reference.set_camera_orientation(zoom=zoom)
+            else:
+                warnings.warn(
+                    """The currently used scene class does not support zooming! If the scene
+                does not appear correct, please change to a class with set_camera_orientation."""
+                )
         # Create Manim axes
         if len(interval) == 3:
             x_interval, y_interval, z_interval = interval
@@ -269,11 +279,12 @@ class AxesAndGraphHelper:
         plot_color: Optional[int] = None,
         add_function_plot_to_scene: Optional[bool] = None,
         animate: Optional[bool] = None,
+        dotted_plot: Optional[bool] = None,
     ) -> ParametricFunction:
         """Plots a function on the axes.
 
         :param graph_function: A function to use for displaying the graph.
-        For example, for the function z(x,y)=x^2+y^2, pass SYMBOL_X^2+SYMBOL_Y^2
+        For example, for the function z(x,y)=x^2+y^2, pass (SYMBOL_X, SYMBOL_Y, SYMBOL_X^2+SYMBOL_Y^2)
 
         :param graph_function_variables: The variables that the function to display takes as input.
         For example, for the function z(x,y)=x^2+y^2, pass [SYMBOL_X, SYMBOL_Y]
@@ -291,6 +302,8 @@ class AxesAndGraphHelper:
 
         :param animate: If True, will render the addition of the plot to the scene using the Create() animation.
         If False, will instead use the .add() function.
+
+        :param dotted_plot: If True, the rendered line will be dotted. If False, it will not. Defaults to False.
         """
         if plot_color is None:
             plot_color = RED
@@ -298,6 +311,8 @@ class AxesAndGraphHelper:
             add_function_plot_to_scene = True
         if animate is None:
             animate = True
+        if dotted_plot is None:
+            dotted_plot = False
         graph_lambda_function = lambdify(input_variables, graph_function, "numpy")
 
         def parsed_graph_function(*args) -> NDArray[float]:
@@ -322,15 +337,18 @@ class AxesAndGraphHelper:
         if add_function_plot_to_scene:
             self.rendered_functions.append(
                 (
-                    function_plot,
+                    function_plot.copy(),
                     {  # Save kwargs passed to this function
                         "graph_function": graph_function,
                         "input_variables": input_variables,
                         "range_to_use_for_function": range_to_use_for_function,
                         "plot_color": plot_color,
+                        "dotted_plot": dotted_plot,
                     },
                 )
             )
+            if dotted_plot:
+                function_plot = DashedVMobject(function_plot)
             self.axes_object.add(function_plot)
             if animate:
                 self.scene_reference.play(Create(function_plot))
@@ -353,7 +371,7 @@ class AxesAndGraphHelper:
 
         :param coordinates: The coordinates for the dot.
 
-        :param show_coordinates: If True, the coordinates will be indicated by showing them next to the point.
+        :param show_coordinates: If True, the coordinates will be indicated by showing them next to the point. Default is False.
 
         :param coordinate_display_location: If show_coordinates=True, changes where the coordinates are displayed relative to the point.
         Default is UP.
@@ -430,25 +448,41 @@ class AxesAndGraphHelper:
         if return_created_objects:
             return added_objects
 
-    def plot_line(self, coordinate: float, vertical: Optional[bool] = None) -> None:
+    def plot_line(
+        self,
+        coordinate: float,
+        vertical: Optional[bool] = None,
+        plot_color: Optional[ManimColor] = None,
+        dotted_plot: Optional[bool] = None,
+    ) -> ParametricFunction:
         """Plot a line, either horizontal or vertical. The line will cover the whole axes.
 
         :param coordinate: The y coordinate to put the line at if vertical=False.
         Otherwise, the x coordinate to put it on.
 
         :param vertical: If True, will generate a vertical line. If False, it will be horizontal.
-        Default is True."""
+        Default is True.
+
+        :param plot_color: The color to plot with. Default is: see plot_function.()
+
+        :param dotted_plot: Whether to render a dotted plot or not. Default is True."""
         if vertical is None:
             vertical = True
+        if dotted_plot is None:
+            dotted_plot = True
         # Get the relevant range and function depending on the provided coordinates
         if vertical:
             range_to_plot = self.axes_object.y_range
             graph_function = (coordinate, SYMBOL_Y, 0)
+            input_variables = [SYMBOL_Y]
         else:
             range_to_plot = self.axes_object.x_range
             graph_function = (SYMBOL_X, coordinate, 0)
-        self.plot_function(
+            input_variables = [SYMBOL_X]
+        return self.plot_function(
             graph_function=graph_function,
-            input_variables=[SYMBOL_X],
+            input_variables=input_variables,
             range_to_use_for_function=range_to_plot,
+            plot_color=plot_color,
+            dotted_plot=dotted_plot,
         )

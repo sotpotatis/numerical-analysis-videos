@@ -4,6 +4,7 @@ Helper functions for fitting a polynomial to a set of points.
 
 import logging
 
+from numpy._typing import NDArray
 from sympy import Symbol
 from typing import List, Tuple, Optional, Union
 from numpy.linalg import solve
@@ -16,7 +17,8 @@ def interpolate_over(
     points: List[List[Union[int, float]]],
     polynomial_degree: Optional[int] = None,
     line_of_best_fit: Optional[bool] = None,
-) -> List[float]:
+    return_matricies: Optional[bool] = None,
+) -> Union[List[float], Tuple[List[float], NDArray, NDArray]]:
     """Generates interpolation polynomial coefficients for a set of points.
     The function will generate a polynomial of degree i-1 if i is the number of given points, unless the degree is set.
 
@@ -27,12 +29,18 @@ def interpolate_over(
 
     :param line_of_best_fit: Set to True to acknowledge that you're interpolating using line of best fit, polynomial_degree<i-1 where i is the number of given points
 
-    :returns The set of polynomial coefficients, in order lowest (x^0) to highest(x^(i-1)) .
+
+    :param return_matricies If True, also returns the A matrix and the b matrix (in the format Ax=b) that lies out the equations for solving for the coefficients
+
+    :returns The set of polynomial coefficients, in order lowest (x^0) to highest(x^(i-1)) . If return_matricies is True, also returns the A matrix and the b matrix
+    (in the format Ax=b) that lies out the equations for solving for the coefficients
     """
     if polynomial_degree is None:
         polynomial_degree = len(points) - 1
     if line_of_best_fit is None:
         line_of_best_fit = False
+    if return_matricies is None:
+        return_matricies = False
     if polynomial_degree < len(points) - 1 and not line_of_best_fit:
         raise ValueError(
             """"You've set a polynomial degree that requires a line of best fit 
@@ -60,7 +68,10 @@ def interpolate_over(
         value matrix: {value_matrix}"""
     )
     solutions = solve(coefficient_matrix, value_matrix)
-    return solutions
+    if not return_matricies:
+        return solutions
+    else:
+        return solutions, coefficient_matrix, value_matrix
 
 
 def interpolation_coefficients_to_function_template(

@@ -18,12 +18,16 @@ from manim import (
     VGroup,
     ParametricFunction,
     BackgroundRectangle,
+    BLUE,
+    Create,
 )
 from sympy import lambdify
 from helper_functions.general_utilities import (
     clear_screen,
+    play_multiple,
 )
 from helper_functions.graph import SYMBOL_X
+from helper_functions.latex_utilities import create_list
 from helper_functions.point_interpolation import (
     interpolation_coefficients_to_function_template,
     linear_spline_interpolation,
@@ -38,6 +42,7 @@ from interpolation.shared_constants import (
     set_title_heading_to,
     add_witch_of_agnesi_points,
     create_logger,
+    TOP_HEADING_SCALE,
 )
 from helper_functions.color_utilities import (
     cycle_through_color_wheel,
@@ -224,6 +229,21 @@ class Splines(ThreeDSlide):
         and_so_forth_text = Tex("...och så vidare!")
         and_so_forth_text.scale(2)
         self.play(GrowFromCenter(and_so_forth_text))
+        self.next_slide()
+        # Add some general rules to keep in mind
+        general_rules_title = Tex("Minnesregler", color=BLUE)
+        general_rules_title.scale(TOP_HEADING_SCALE)
+        general_rules_title.to_edge(UP)
+        general_rules_text = Tex(
+            create_list(
+                [
+                    r"$\text{Antal (individuella) splines-polynom}=\text{Antal datapunkter}-1$",
+                    r"Antal ekvationer som krävs: $4\cdot \text{Antal datapunkter}$ (för kubiska splines)",
+                ]
+            )
+        )
+        general_rules_text.next_to(general_rules_title, DOWN)
+        play_multiple(self, [general_rules_title, general_rules_text], Create)
 
     def transform_plot_colors(
         self,

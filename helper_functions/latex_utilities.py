@@ -4,6 +4,31 @@ Various utilities related to LaTeX code generation."""
 from enum import Enum
 from typing import Optional, Union, List
 from manim import RED, YELLOW, GREEN, BLUE, TexTemplate
+from numpy import float64
+
+
+def generate_tex_template_for_packages(package_list: List[str]) -> TexTemplate:
+    """In Manim, to use external TeX packages inside a Tex Mobject, you need to include a
+    TexTemplate. This function helps you generate a TeX template based on a list of packages.
+
+    :param package_list: The package list you want to include in your LaTeX environment.
+    """
+    template = TexTemplate()
+    for package in package_list:
+        template.add_to_preamble(r"\usepackage{%s}" % (package) + "\n")
+    return template
+
+
+# Some precooked templates for use in code
+TEX_TEMPLATE_COLORS = generate_tex_template_for_packages(
+    ["xcolor"]
+)  # TeX template for using colors
+# To fix an error with large matrices, we need to set the counter for the max matrix size to 12.
+# See https://www.overleaf.com/learn/latex/Errors/Extra_alignment_tab_has_been_changed_to_%5Ccr for more information
+TEX_TEMPLATE_FIX_MAX_MATRIX_SIZE = generate_tex_template_for_packages(["amsmath"])
+TEX_TEMPLATE_FIX_MAX_MATRIX_SIZE.add_to_preamble(
+    r"\setcounter{MaxMatrixCols}{12}" + "\n"
+)
 
 
 def manim_color_to_latex_color(color) -> str:
@@ -18,6 +43,8 @@ def manim_color_to_latex_color(color) -> str:
         return "green"
     elif color == BLUE:
         return "blue"
+    else:
+        raise ValueError("Color not supported.")
 
 
 def create_cases(
@@ -57,6 +84,35 @@ def create_cases(
     return latex_code
 
 
+class ListType(Enum):
+    """A set of list styles that can be used with create_list."""
+
+    BULLET_LIST = "bullet"
+    NUMBERED_LIST = "numbered"
+
+
+def create_list(entries: List[str], list_type: Optional[ListType] = None) -> str:
+    """Creates a list.
+
+    :param entries: The list entires as a list of LaTeX strings.
+
+    :param list_type: The list type, see ListType. Defaults to ListType.BULLET_LIST
+    """
+    if list_type is None:
+        list_type = ListType.BULLET_LIST
+    if list_type == ListType.BULLET_LIST:
+        environment_to_use = "itemize"
+    elif list_type == ListType.NUMBERED_LIST:
+        environment_to_use = "enumerate"
+    else:
+        raise ValueError("Invalid list type. Please use a list type from ListType.")
+    latex_code = r"\begin{%s}" % (environment_to_use)
+    for entry in entries:
+        latex_code += r"\n \item " + entry
+    latex_code = r"\n\end{%s}" % (environment_to_use)
+    return latex_code
+
+
 class MatrixStyle(Enum):
     """A set of matrix styles that can be used with create_matrix.
     See https://latex-programming.fandom.com/wiki/Matrix_(LaTeX_environment) for a visualization
@@ -74,6 +130,7 @@ class MatrixStyle(Enum):
 def create_matrix(
     coordinates: List[List[Union[int, float, str]]],
     matrix_style: Optional[MatrixStyle] = None,
+    round_to_decimals: Optional[int] = None,
 ) -> str:
     """Create a string for a LaTeX matrix.
 
@@ -82,34 +139,25 @@ def create_matrix(
     <row i entries> would have the format [<row i, column 1>,<row i, column 2>, ..., <row i, column m>]
     The column entries will be converted to a string if they are not already via their str() function.
 
-
     :param matrix_style: The style of the matrix, see MATRIX_TYPE. Defaults to a pmatrix.
+
+    :param round_to_decimals: If not None, round all matrix values that aren't strings to a float corresponding to this number.
+    Defaults to no rounding, i.e. None.
     """
     if matrix_style is None:
         matrix_style = MatrixStyle.PARENTHESES_BORDERS
-    latex_string = r"\begin{%s}" % (matrix_style.value)
+    latex_string = r"\begin{%s}" % (matrix_style.value) + "\n"
     for row in coordinates:
+        # Convert single entries to the desired list format which is being used
+        if isinstance(row, float) or isinstance(row, int) or isinstance(row, float64):
+            row = [row]
         for column in row:
+            if not isinstance(column, str):
+                if round_to_decimals is not None and (
+                    isinstance(column, int) or isinstance(column, float)
+                ):
+                    column = round(column, round_to_decimals)
             latex_string += str(column) + "&"
-        latex_string = latex_string.strip("&") + r"\\"
+        latex_string = latex_string.strip("&") + r"\\" + "\n"
     latex_string += r"\end{%s}" % (matrix_style.value)
-    print(latex_string)
     return latex_string
-
-
-def generate_tex_template_for_packages(package_list: List[str]) -> TexTemplate:
-    """In Manim, to use external TeX packages inside a Tex Mobject, you need to include a
-    TexTemplate. This function helps you generate a TeX template based on a list of packages.
-
-    :param package_list: The package list you want to include in your LaTeX environment.
-    """
-    template = TexTemplate()
-    for package in package_list:
-        template.add_to_preamble(r"\usepackage{%s}" % (package) + "\n")
-    return template
-
-
-# Some precooked templates for use in code
-TEX_TEMPLATE_COLORS = generate_tex_template_for_packages(
-    ["xcolor"]
-)  # TeX template for using colors

@@ -23,7 +23,7 @@ def play_multiple(
 
     Other args and kwargs passed will be passed to play."""
     for item in items_to_animate:
-        source_scene.play(animation_to_play(item), *args, **kwargs)
+        source_scene.play(animation_to_play(item, *args, **kwargs))
 
 
 def addition_string(input_number: Union[int, float]) -> str:

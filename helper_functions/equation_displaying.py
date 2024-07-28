@@ -32,7 +32,8 @@ def create_equation_with_border(
         mathtex_args = equation
     else:
         mathtex_args = [equation]
-    generic_polynomial_equation = MathTex(*mathtex_args).scale(scale)
+    generic_polynomial_equation = MathTex(*mathtex_args)
+    generic_polynomial_equation.scale(scale)
     equation_rectangle = always_redraw(
         lambda: SurroundingRectangle(
             generic_polynomial_equation, color=border_color, corner_radius=border_radius
