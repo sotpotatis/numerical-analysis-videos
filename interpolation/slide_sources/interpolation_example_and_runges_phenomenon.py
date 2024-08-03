@@ -8,22 +8,19 @@ from manim import (
     MathTex,
     Create,
     ReplacementTransform,
-    ScaleInPlace,
     UR,
-    WHITE,
-    GrowFromCenter,
 )
 
 from helper_functions.equation_displaying import create_equation_with_border
 from helper_functions.general_utilities import clear_screen, addition_string
 from helper_functions.graph import SYMBOL_X
 from helper_functions.latex_utilities import create_cases
-from helper_functions.loading.loading import LoadingSpinner
 from helper_functions.point_interpolation import (
     interpolate_over,
     interpolation_coefficients_to_function_template,
 )
 from helper_functions.graph import AxesAndGraphHelper
+from helper_functions.premade_slides import create_method_explanatory_slide
 from interpolation.shared_constants import (
     set_title_heading_to,
     evaluated_points,
@@ -31,18 +28,20 @@ from interpolation.shared_constants import (
     add_witch_of_agnesi_points,
     CORNER_EQUATIONS_SCALE,
 )
+
 from interpolation.slide_sources.interpolation_equations import (
     illustrate_interpolation_equations,
-    create_interpolation_matrix,
+    illustrate_solving_interpolation_equation_system,
+    create_interpolation_general_method_tex_string,
 )
 
 
 class InterpolationExampleAndRungesPhenomenon(ThreeDSlide):
     def construct(self):
+        set_title_heading_to(self, "Interpolation - grundläggande exempel")
         self.axes = AxesAndGraphHelper(
             self, interval=[[0, 7], [0, 5]], use_2d_axes_class=True
         )
-        set_title_heading_to(self, "Interpolation - grundläggande exempel")
         # Scale up axes to make the points appear bigger and clearer to the viewer
         add_witch_of_agnesi_points(self, evaluated_points)
         # Add and create graph to demonstrate how to interpolate
@@ -62,23 +61,9 @@ class InterpolationExampleAndRungesPhenomenon(ThreeDSlide):
         ) = illustrate_interpolation_equations(
             self, evaluated_points, polynomial_degree=2
         )
-        generic_equation_system.set_color(WHITE)
-        clear_screen(self, [generic_equation_system])
-        generic_equation_system.move_to([0, 0, 0])  # Move to center of screen
-        self.play(ScaleInPlace(generic_equation_system, 2))
-        self.next_slide()
-        matrix_system_latex, _ = create_interpolation_matrix(
-            evaluated_points, polynomial_degree=2
+        matrix_system_latex = illustrate_solving_interpolation_equation_system(
+            self, evaluated_points, 2, generic_equation_system
         )
-        self.remove(generic_equation_system)
-        self.play(GrowFromCenter(matrix_system_latex))
-        self.next_slide()
-        # Play animation of solving the system
-        loading_spinner = LoadingSpinner(
-            self, before_addition_function=lambda object: object.move_to([0, 0, 0])
-        )
-        loading_spinner.spin(duration=3)
-        self.remove(*loading_spinner.created_objects)
         # Show solution of equation system
         (
             c_3_interpolation_example,
@@ -138,6 +123,14 @@ class InterpolationExampleAndRungesPhenomenon(ThreeDSlide):
             ),
             input_variables=[SYMBOL_X],
             range_to_use_for_function=[0, 7],
+        )
+        self.next_slide()
+        # Add a cheatsheet to how to interpolate
+        create_method_explanatory_slide(
+            self,
+            "Generell polynominterpolation",
+            create_interpolation_general_method_tex_string(centering=False),
+            title_color=BLUE,
         )
         set_title_heading_to(self, "Runges fenomen")
         # Change axes range to include negative x values as well

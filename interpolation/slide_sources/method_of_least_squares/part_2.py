@@ -9,9 +9,6 @@ from manim import (
     ReplacementTransform,
     GrowFromCenter,
     WHITE,
-    Tex,
-    ORANGE,
-    UP,
     Text,
     DOWN,
     UR,
@@ -35,14 +32,14 @@ from helper_functions.matrix_utilities import transpose_matrix
 from helper_functions.point_interpolation import (
     interpolation_coefficients_to_function_template,
 )
+from helper_functions.premade_slides import create_method_explanatory_slide
 from interpolation.shared_constants import (
     sorted_all_evaluated_points,
     CORNER_EQUATIONS_SCALE,
-    TOP_HEADING_SCALE,
     add_witch_of_agnesi_points,
-    DISCLAIMER_TEXT_SCALE,
     create_logger,
 )
+from helper_functions.text_scales import DISCLAIMER_TEXT_SCALE
 from interpolation.slide_sources.interpolation_equations import (
     illustrate_interpolation_equations,
     create_interpolation_matrix,
@@ -258,16 +255,13 @@ class MethodOfLeastSquaresPartTwo(ThreeDSlide):
         self.next_slide()
         # Create heading and explanation about how the method of least squares works. But it will not be added yet!
         # They are created here for positioning purposes.
-        heading = Tex("Minsta kvadratmetoden", color=ORANGE)
-        heading.scale(TOP_HEADING_SCALE)
-        heading.to_edge(UP)
-        least_squares_explanation = Tex(
+        heading, least_squares_explanation = create_method_explanatory_slide(
+            "Minsta kvadratmetoden",
             r"Konstruera ett system av ekvationer för att interpolera över önskat antal punkter. (se tidigare i videon)"
             + r"Skriv om systemet på matrisform, där $\vec A$ är koefficientmatris och $\vec b$ är högerledsmatris."
             + r"Låt $\vec x$ representera de sökta koefficienterna för interpolationspolynomet du vill skapa."
-            r"Ekvationssystemet som ska lösas ges då av:"
+            r"Ekvationssystemet som ska lösas ges då av:",
         )
-        least_squares_explanation.next_to(heading, DOWN)
         # Fade the general matrix equation into general least squares equation
         (
             general_least_squares_equation,

@@ -42,8 +42,8 @@ from interpolation.shared_constants import (
     set_title_heading_to,
     add_witch_of_agnesi_points,
     create_logger,
-    TOP_HEADING_SCALE,
 )
+from helper_functions.text_scales import TOP_HEADING_SCALE
 from helper_functions.color_utilities import (
     cycle_through_color_wheel,
     darker_or_brighter,

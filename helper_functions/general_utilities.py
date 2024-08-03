@@ -54,3 +54,16 @@ def clear_screen(
     for item in source_scene.mobjects:
         if item not in items_to_preserve:
             source_scene.remove(item)
+
+
+def format_to_parenthesis_if_negative(source_number: Union[float, int, str]) -> str:
+    """Formats a number, adding parenthesis if it's smaller than 0, otherwise preserves the number.
+    For example: input -6 (float) --> (-6) (string). Input 2 (float) --> 2 (string).
+
+    :param source_number: The number to format. If not a number (float, int) but a string,
+    float(string) will be applied to the input"""
+    if not isinstance(source_number, float) or not isinstance(source_number, int):
+        source_number = float(source_number)
+        if source_number.is_integer():
+            source_number = int(source_number)
+    return f"({source_number})" if source_number < 0 else repr(source_number)

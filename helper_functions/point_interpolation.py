@@ -18,6 +18,7 @@ def interpolate_over(
     polynomial_degree: Optional[int] = None,
     line_of_best_fit: Optional[bool] = None,
     return_matricies: Optional[bool] = None,
+    center_around_point: Optional[float] = None,
 ) -> Union[List[float], Tuple[List[float], NDArray, NDArray]]:
     """Generates interpolation polynomial coefficients for a set of points.
     The function will generate a polynomial of degree i-1 if i is the number of given points, unless the degree is set.
@@ -31,6 +32,8 @@ def interpolate_over(
 
 
     :param return_matricies If True, also returns the A matrix and the b matrix (in the format Ax=b) that lies out the equations for solving for the coefficients
+
+    :param center_around_point: If not None, calculate a centering polynomial around the given point. This can speed up calculation times.
 
     :returns The set of polynomial coefficients, in order lowest (x^0) to highest(x^(i-1)) . If return_matricies is True, also returns the A matrix and the b matrix
     (in the format Ax=b) that lies out the equations for solving for the coefficients
@@ -56,7 +59,12 @@ def interpolate_over(
         value_matrix.append(output_value)
         coefficient_matrix_row = [1]
         for b in range(1, polynomial_degree + 1):
-            coefficient_matrix_row.append(input_value**b)
+            # Perform centering if set
+            if center_around_point is not None:
+                coefficient_matrix_value = input_value - center_around_point
+            else:
+                coefficient_matrix_value = input_value
+            coefficient_matrix_row.append(coefficient_matrix_value**b)
         coefficient_matrix.append(coefficient_matrix_row)
     # Multiply both sides by coefficient_matrix^T if needed
     if line_of_best_fit:
@@ -75,7 +83,9 @@ def interpolate_over(
 
 
 def interpolation_coefficients_to_function_template(
-    interpolation_coefficients: List[float], input_variable: Symbol
+    interpolation_coefficients: List[float],
+    input_variable: Symbol,
+    center_around_point: Optional[float] = None,
 ) -> Tuple[Symbol, callable, float]:
     """Converts a list of interpolation coefficients to a tuple that can be used to create a lambda function returning the value of the
     interpolation polynomial at a certain point.
@@ -84,12 +94,18 @@ def interpolation_coefficients_to_function_template(
 
     :param input_variable The Sympy input variable/symbol.
 
+    :param center_around_point: If set, specifies a point towards which the polynomial is centered.
+
     :returns Call the generated interpolation polynomial f, a function of <variable>, then the output is
     (<variable>, f(<variable>), 0)"""
     result = 0
     for i in range(len(interpolation_coefficients)):
         interpolation_coefficient = interpolation_coefficients[i]
-        result += interpolation_coefficient * (input_variable**i)
+        if center_around_point is not None:
+            function_expression = input_variable - center_around_point
+        else:
+            function_expression = input_variable
+        result += interpolation_coefficient * (function_expression**i)
     return (input_variable, result, 0)
 
 

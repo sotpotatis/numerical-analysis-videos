@@ -108,8 +108,8 @@ def create_list(entries: List[str], list_type: Optional[ListType] = None) -> str
         raise ValueError("Invalid list type. Please use a list type from ListType.")
     latex_code = r"\begin{%s}" % (environment_to_use)
     for entry in entries:
-        latex_code += r"\n \item " + entry
-    latex_code = r"\n\end{%s}" % (environment_to_use)
+        latex_code += "\n" + r"\item " + entry
+    latex_code += "\n" + r"\end{%s}" % (environment_to_use)
     return latex_code
 
 
@@ -160,4 +160,24 @@ def create_matrix(
             latex_string += str(column) + "&"
         latex_string = latex_string.strip("&") + r"\\" + "\n"
     latex_string += r"\end{%s}" % (matrix_style.value)
+    return latex_string
+
+
+def create_array_environment(tex_entries: List[List[str]]) -> str:
+    """Creates an array LaTeX environment string, which is useful for arranging LaTeX
+    strings in columns and rows.
+
+    :param tex_entries: A 2-dimensional list of entries to include in the array environment.
+    In the format [[<row 1 column 1>, <row 1 column 2>], [<row 2 column 1>]] and so forth
+    """
+    number_of_columns = max([len(row_entries) for row_entries in tex_entries])
+    latex_string = r"\begin{array}{%s}" % ("c" * number_of_columns)
+    for row in tex_entries:
+        row_latex_string = ""
+        for column in row:
+            row_latex_string += column + "&"
+        # Remove trailing & sign and prepare for next entry
+        row_latex_string = row_latex_string[:-1] + r"\\" + "\n"
+        latex_string += row_latex_string
+    latex_string += r"\end{array}"
     return latex_string

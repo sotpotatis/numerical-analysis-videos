@@ -146,7 +146,3 @@ INTERPOLATION_DEFAULT_AXES_INTERVAL[0] = INTERPOLATION_DEFAULT_AXES_INTERVAL[1] 
 # When we move a polynomial to the corner of the graph, we want to scale it down
 # This scale is used across multiple files so it is for convenience defined here
 CORNER_EQUATIONS_SCALE = 0.8
-# To show a heading on top of the screen, centered, this scale is a good start
-TOP_HEADING_SCALE = 2
-# To show a discalimer text, this is a suitable size
-DISCLAIMER_TEXT_SCALE = 0.5

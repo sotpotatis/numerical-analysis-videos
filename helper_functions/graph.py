@@ -402,6 +402,9 @@ class AxesAndGraphHelper:
         if return_created_objects is None:
             return_created_objects = False
         point_base_class = Dot3D if not self.use_2d_axes_class else Dot
+        self.logger.info(
+            f"Adding point ({point_base_class}) on coordinates {coordinates}."
+        )
         point = point_base_class(
             point=self.axes_object.coords_to_point(*coordinates), color=dot_color
         )
@@ -410,7 +413,13 @@ class AxesAndGraphHelper:
         coordinate_display = None
         if show_coordinates:
             coordinate_text = "("
-            for coordinate in coordinates[: (-1 if show_z_coordinate else -2)]:
+            # Decide what to iterate over. We might want to hide coordinates
+            # in the text, depending on user setting
+            if not show_z_coordinate and len(coordinates) == 3:
+                coordinates_to_show = coordinates[:-1]
+            else:
+                coordinates_to_show = coordinates
+            for coordinate in coordinates_to_show:
                 coordinate_value = coordinate
                 if round_coordinates_to_decimals is not None:
                     coordinate_value = round(
