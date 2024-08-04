@@ -9,6 +9,9 @@ from manim import (
     Create,
     ReplacementTransform,
     UR,
+    Tex,
+    DOWN,
+    Write,
 )
 
 from helper_functions.equation_displaying import create_equation_with_border
@@ -21,6 +24,7 @@ from helper_functions.point_interpolation import (
 )
 from helper_functions.graph import AxesAndGraphHelper
 from helper_functions.premade_slides import create_method_explanatory_slide
+from helper_functions.text_scales import DISCLAIMER_TEXT_SCALE
 from interpolation.shared_constants import (
     set_title_heading_to,
     evaluated_points,
@@ -38,7 +42,9 @@ from interpolation.slide_sources.interpolation_equations import (
 
 class InterpolationExampleAndRungesPhenomenon(ThreeDSlide):
     def construct(self):
-        set_title_heading_to(self, "Interpolation - grundläggande exempel")
+        set_title_heading_to(
+            self, "Interpolation - grundläggande exempel", title_scale=1 / 2
+        )
         self.axes = AxesAndGraphHelper(
             self, interval=[[0, 7], [0, 5]], use_2d_axes_class=True
         )
@@ -73,21 +79,28 @@ class InterpolationExampleAndRungesPhenomenon(ThreeDSlide):
         c_1_interpolation_example = round(c_1_interpolation_example, 2)
         c_2_interpolation_example = round(c_2_interpolation_example, 2)
         c_3_interpolation_example = round(c_3_interpolation_example, 2)
+        solution_equation_system = MathTex(
+            create_cases(
+                [
+                    f"c_1={c_1_interpolation_example}",
+                    f"c_2={c_2_interpolation_example}",
+                    f"c_3={c_3_interpolation_example}",
+                ],
+                include_math_environment_start=False,
+            )
+        )
+        solution_equation_system.scale(1.5)
         self.play(
             ReplacementTransform(
                 matrix_system_latex,
-                MathTex(
-                    create_cases(
-                        [
-                            f"c_1={c_1_interpolation_example}",
-                            f"c_2={c_2_interpolation_example}",
-                            f"c_3={c_3_interpolation_example}",
-                        ],
-                        include_math_environment_start=False,
-                    )
-                ).scale(1.5),
+                solution_equation_system,
             )
         )
+        rounding_disclaimer = Tex("*koefficienter har avrundats till 2 decimaler")
+        rounding_disclaimer.scale(DISCLAIMER_TEXT_SCALE)
+        rounding_disclaimer.next_to(solution_equation_system, DOWN)
+        self.play(Write(rounding_disclaimer), run_time=0.5)
+        self.wait(0.5)
         clear_screen(self)
         # Add final equation
         final_polynomial_function = f"y={c_1_interpolation_example}x^2{addition_string(c_2_interpolation_example)}x{addition_string(c_3_interpolation_example)}"
@@ -95,7 +108,7 @@ class InterpolationExampleAndRungesPhenomenon(ThreeDSlide):
             final_polynomial_equation,
             final_polynomial_equation_rectangle,
         ) = create_equation_with_border(final_polynomial_function)
-        self.add(final_polynomial_equation, final_polynomial_equation_rectangle)
+        self.add(final_polynomial_equation_rectangle, final_polynomial_equation)
         self.next_slide()
         # Shrink final polynomial equation
         (
@@ -132,9 +145,10 @@ class InterpolationExampleAndRungesPhenomenon(ThreeDSlide):
             create_interpolation_general_method_tex_string(centering=False),
             title_color=BLUE,
         )
+        clear_screen(self)
         set_title_heading_to(self, "Runges fenomen")
         # Change axes range to include negative x values as well
-        self.axes.create_axes([[-12, 12], [-10, 10]])
+        self.axes.create_axes([[-12, 12], [0, 5]])
         # Add more points
         add_witch_of_agnesi_points(self, all_evaluated_points)
         # Generate interpolation polynomial to demonstrate Runges phenomenon
@@ -147,3 +161,5 @@ class InterpolationExampleAndRungesPhenomenon(ThreeDSlide):
             range_to_use_for_function=[-10, 10],
             plot_color=BLUE,
         )
+        self.wait(0.5)
+        self.next_slide()

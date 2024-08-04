@@ -8,11 +8,9 @@ from typing import Optional, List, Union
 
 from manim import (
     Create,
-    RIGHT,
     ValueTracker,
     Mobject,
     Arrow3D,
-    ScaleInPlace,
     RED,
     YELLOW,
     Tex,
@@ -21,6 +19,13 @@ from manim import (
     BackgroundRectangle,
     FadeIn,
     Line,
+    DOWN,
+    SurroundingRectangle,
+    BLACK,
+    MED_SMALL_BUFF,
+    DrawBorderThenFill,
+    DL,
+    Line3D,
 )
 from sympy import lambdify
 
@@ -31,11 +36,10 @@ from helper_functions.point_interpolation import (
 )
 from helper_functions.graph import AxesAndGraphHelper
 from interpolation.shared_constants import (
-    all_evaluated_points,
+    sorted_all_evaluated_points,
     set_title_heading_to,
     add_witch_of_agnesi_points,
     create_logger,
-    CORNER_EQUATIONS_SCALE,
 )
 from interpolation.value_tracker_plotting import (
     generate_updater_for_plot_graph_according_to_constant_values,
@@ -53,31 +57,37 @@ class MethodOfLeastSquaresPartOne(ThreeDSlide):
         create_logger(self)
         set_title_heading_to(self, "Minsta kvadratmetoden")
         self.axes = AxesAndGraphHelper(
-            self, interval=[[-10, 10], [0, 5]], use_2d_axes_class=True
+            self, interval=[[-11, 11], [-3, 5]], use_2d_axes_class=True
         )
         # Use the same points as splines when demonstrating least squares
-        add_witch_of_agnesi_points(self, all_evaluated_points, animation_run_time=1)
+        add_witch_of_agnesi_points(
+            self, sorted_all_evaluated_points, animation_run_time=1
+        )
         # Fit a 2nd degree polynomial to the 11 datapoints
         self.next_slide()
         (
             generic_polynomial_equation,
             generic_polynomial_equation_rectangle,
         ) = create_equation_with_border("y=c_1x^2+c_2x+c_3")
-        generic_polynomial_equation.to_edge(RIGHT)
+        generic_polynomial_equation_rectangle.set_fill(color=BLACK, opacity=1)
         self.add(generic_polynomial_equation_rectangle)
         self.play(Create(generic_polynomial_equation))
-        self.next_slide()
-        self.play(ScaleInPlace(generic_polynomial_equation, CORNER_EQUATIONS_SCALE))
+        self.wait(0.5)
         self.next_slide()
         self.logger.info(
             f"Fit a second degree polynomial to datapoints with coefficients: {c1_real}, {c2_real} and {c3_real}"
         )
+        for object in [
+            generic_polynomial_equation_rectangle,
+            generic_polynomial_equation,
+        ]:
+            self.remove(object)
         # Add value trackers for the different coefficients
-        c1_real * 3 / 4
-        c1_real * 3 / 2
+        c1_min = c1_real * 3 / 4
+        c1_max = c1_real * 3 / 2
         c2_min = c2_max = c2_real  # c2 is not animated
-        c3_real * 1 / 2
-        c3_real * 3 / 2
+        c3_min = c3_real * 1 / 2
+        c3_max = c3_real * 3 / 2
         c1 = ValueTracker(c1_real)
         c2 = ValueTracker(c2_real)
         c3 = ValueTracker(c3_real)
@@ -91,15 +101,21 @@ class MethodOfLeastSquaresPartOne(ThreeDSlide):
         least_squares_polynomial_value_plot = least_squares_polynomial_value_updater(
             return_new_plot=True
         )
+        # Save the plot that has the smallest residual for later addition
+        original_least_squares_polynomial_value_plot = (
+            least_squares_polynomial_value_plot.copy()
+        )
         least_squares_polynomial_value_plot.add_updater(
             least_squares_polynomial_value_updater
         )
         self.add(least_squares_polynomial_value_plot)
+        self.wait(0.5)
         self.next_slide()
         # Add plots for the residuals. Do this by creating their updater and calling it to get
         # the initial lines
         residual_line_updaters = [
-            self.create_residual_lines_updater(point) for point in all_evaluated_points
+            self.create_residual_lines_updater(point)
+            for point in sorted_all_evaluated_points
         ]
         residual_lines = [
             residual_line_updater(return_new_line=True)
@@ -110,42 +126,75 @@ class MethodOfLeastSquaresPartOne(ThreeDSlide):
             residual_line_updater = residual_line_updaters[i]
             residual_line.add_updater(residual_line_updater)
         self.axes.axes_object.add(*residual_lines)
+        self.wait(0.5)
         self.next_slide()
-        # Add an arrow next to each of the residual lines
-        residual_line_arrows = []
+        # Add a rectangle to each of the residual lines to show the residual lines
+        residual_line_rectangles = []
         for residual_line in residual_lines:
-            residual_line_start = residual_line.get_start()
-            residual_line_middle = residual_line_start
-            # Get middle Y point of residual line
-            residual_line_middle[1] = residual_line_middle[1] / 2
-            # Specify start and endpoints for the arrow. Make it start a little to the left of the residual
-            # and end a little to the right of the residual
-            arrow_start = residual_line_middle
-            arrow_start[0] += 1
-            arrow_end = arrow_start.copy()
-            arrow_end[0] += 1
-            arrow = Arrow3D(
-                start=self.axes.axes_object.coords_to_point(*arrow_start),
-                end=self.axes.axes_object.coords_to_point(*arrow_end),
-                color=YELLOW,
+            residual_line_rectangle = SurroundingRectangle(
+                residual_line, color=YELLOW, buff=MED_SMALL_BUFF
             )
-            self.add(arrow)
-            residual_line_arrows.append(arrow)
+            self.play(
+                DrawBorderThenFill(residual_line_rectangle),
+                run_time=1 / (len(residual_lines)),
+            )
+            residual_line_rectangles.append(residual_line_rectangle)
         # Add text explaining that "these are called the residuals"
         residuals_text = Tex("Residualer", color=YELLOW)
-        residuals_text.scale(2.5)
-        residuals_text.to_corner(DR)
+        residuals_text.scale(1.5)
+        residuals_text.to_edge(DOWN)
         residuals_text_background = BackgroundRectangle(
             residuals_text, fill_opacity=1, stroke_width=0
         )
-        residuals_text_group = VGroup(residuals_text_background, residuals_text)
+        # Add two arrows
+        residual_arrow_1 = Arrow3D(
+            start=residuals_text.get_corner(DR),
+            end=residual_line_rectangles[-1].get_corner(DL),
+            color=YELLOW,
+        )
+        residual_arrow_2 = Arrow3D(
+            start=residuals_text.get_corner(DL),
+            end=residual_line_rectangles[0].get_corner(DR),
+            color=YELLOW,
+        )
+        residuals_text_group = VGroup(
+            residual_arrow_1,
+            residual_arrow_2,
+            residuals_text_background,
+            residuals_text,
+        )
         self.play(FadeIn(residuals_text_group))
         self.next_slide()
+        # Add the purpose of the method of least squares
+        residuals_explanation_text = Tex(
+            r"""Minstakvadratmetoden minimerar \textit{storleken} av \textit{summan} av 
+        alla individuella \textit{residualer} i \textit{kvadrat}.
+        """
+        )
+        residuals_explanation_text.scale(0.75)
+        residuals_explanation_text.next_to(residuals_text, DOWN)
+        residuals_explanation_text_background = BackgroundRectangle(
+            residuals_explanation_text, fill_opacity=1, stroke_width=0
+        )
+        self.add(residuals_explanation_text_background)
+        self.play(Create(residuals_explanation_text))
+        self.wait(0.5)
+        self.next_slide()
         # Remove residual arrows and text
-        objects_to_remove = residual_lines.copy()
-        objects_to_remove.extend([residuals_text, residuals_text_background])
+        objects_to_remove = residual_line_rectangles.copy()
+        objects_to_remove.extend(
+            [
+                residuals_text,
+                residuals_text_background,
+                residuals_explanation_text,
+                residuals_explanation_text_background,
+                residual_arrow_1,
+                residual_arrow_2,
+            ]
+        )
         for object in objects_to_remove:
             self.remove(object)
+        self.wait(0.5)
         self.next_slide()
         # Add equation updater that animates the different values of the coefficients
         polynomial_equation_value_updater = (
@@ -159,11 +208,12 @@ class MethodOfLeastSquaresPartOne(ThreeDSlide):
         polynomial_equation.add_updater(polynomial_equation_value_updater)
         self.remove(generic_polynomial_equation)
         self.add(polynomial_equation)
-        # Animate the fitting of the polynomial TODO readd, commented out for speed
-        # self.play(c3.animate.set_value(c3_min), run_time=COEFFICIENTS_CHANGE_RUN_TIME)
-        # self.play(c1.animate.set_value(c1_min), run_time=COEFFICIENTS_CHANGE_RUN_TIME)
-        # self.play(c1.animate.set_value(c1_max), run_time=COEFFICIENTS_CHANGE_RUN_TIME)
-        # self.play(c3.animate.set_value(c3_max), run_time=COEFFICIENTS_CHANGE_RUN_TIME)
+        # Animate the fitting of the polynomial
+        coefficients_change_run_time = 1 / 2  # Totally this will run for 2 seconds
+        self.play(c3.animate.set_value(c3_min), run_time=coefficients_change_run_time)
+        self.play(c1.animate.set_value(c1_min), run_time=coefficients_change_run_time)
+        self.play(c1.animate.set_value(c1_max), run_time=coefficients_change_run_time)
+        self.play(c3.animate.set_value(c3_max), run_time=coefficients_change_run_time)
         self.next_slide()
         # Remove the objects with updaters that were previously used, because the updaters slow down the code.
         # The least_squares_polynomial_value_plot is re-added without updaters
@@ -175,7 +225,14 @@ class MethodOfLeastSquaresPartOne(ThreeDSlide):
         self.remove(least_squares_polynomial_value_plot)
         for submobject in least_squares_polynomial_value_plot.submobjects:
             self.remove(submobject)
-        self.add(least_squares_polynomial_value_plot)
+        for residual_line in residual_lines:
+            residual_line.clear_updaters()
+            for submobject in residual_line.submobjects:
+                self.remove(submobject)
+            self.remove(residual_line)
+        self.add(original_least_squares_polynomial_value_plot)
+        self.wait(0.5)
+        self.next_slide()
 
     def create_residual_lines_updater(self, point: List[float]) -> callable:
         """Creates a value tracker that plot residual "lines" to the graph.
@@ -188,7 +245,6 @@ class MethodOfLeastSquaresPartOne(ThreeDSlide):
             object: Optional[Mobject] = None,
             dt: Optional[float] = None,
             return_new_line: Optional[bool] = None,
-            include_residual_value: Optional[bool] = False,
         ) -> Optional[Union[Line, VGroup]]:
             """A value tracker updater that plots a residual "lines" to the graph.
 
@@ -196,11 +252,9 @@ class MethodOfLeastSquaresPartOne(ThreeDSlide):
 
             :param dt: The current change in time. Provided by Manim.
 
-            :param return_new_lines If True, will return the new lines as a function return.
+            :param return_new_line If True, will return the new lines as a function return.
             This can be used to create the first instance of the graph, and then subscribe to the updater_function
-
-            :param include_residual_value: If True, will include the residual value
-            by adding it next to the line."""
+            """
             if return_new_line is None:
                 return_new_line = False
             logger = logging.getLogger(__name__)
@@ -227,7 +281,7 @@ class MethodOfLeastSquaresPartOne(ThreeDSlide):
                function value at point ({point_x, point_y}) is ({function_x}, {function_y}, {function_z}),
                line starts at function value? {function_value_is_start}"""
             )
-            graph_line = Line(
+            graph_line = Line3D(
                 start=(
                     function_value_coordinates
                     if function_value_is_start

@@ -105,7 +105,7 @@ def generate_updater_for_equation_related_to_constant_values(
 
         :param dt: The current change in time. Provided by Manim.
 
-        :param return_new_plot If True, will return a generic polynomial equation as a function return.
+        :param return_generic_equation If True, will return a generic polynomial equation as a function return.
         This can be used to create the first instance of the equation display, and then subscribe to the updater_function.
         (see the construct() function for an example of how this is done)"""
         if return_generic_equation is None:
@@ -144,7 +144,7 @@ def generate_updater_for_equation_related_to_constant_values(
         equation, equation_rectangle = create_equation_with_border(
             equation_result, scale=scale, border_color=border_color
         )
-        equation_group = VGroup(equation, equation_rectangle)
+        equation_group = VGroup(equation_rectangle, equation)
         equation_group.to_edge(UR)
         if object is not None:
             object.become(equation_group)

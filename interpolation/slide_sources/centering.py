@@ -176,7 +176,9 @@ class CenteringExampleSlide(ThreeDSlide):
         coefficients_solutions_equation_system = MathTex(
             coefficients_solutions_equation_system
         )
-        solution_disclaimer = Text("*konstanter har avrundats till 2 decimaler")
+        solution_disclaimer = Text(
+            "*värden på koefficienter har avrundats till 2 decimaler"
+        )
         solution_disclaimer.scale(DISCLAIMER_TEXT_SCALE)
         solution_disclaimer.next_to(coefficients_solutions_equation_system, DOWN)
         self.play(

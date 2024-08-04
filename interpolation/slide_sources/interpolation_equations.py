@@ -164,16 +164,22 @@ def illustrate_interpolation_equations(
             end=scene_reference.axes.axes_object.coords_to_point(point_x, point_y),
             color=arrow_color,
         )
+        scene_reference.add(arrow_to_point)
         # Add equation system related to the particular point
         point_equation_system = MathTex(
             create_cases(
                 [f"x={point_x}", f"y={point_y_rounded}"],
                 include_math_environment_start=False,
             )
-        ).scale(1)
+        )
+        point_equation_system.scale(1)
         point_equation_system.next_to(arrow_to_point, UP)
-        scene_reference.add(arrow_to_point)
+        point_equation_system_background = BackgroundRectangle(
+            point_equation_system, fill_opacity=1
+        )
+        scene_reference.add(point_equation_system_background)
         scene_reference.play(Create(point_equation_system))
+        scene_reference.wait(0.5)
         # Generate generic equation
         all_equations.append(
             generate_interpolation_polynomial_equation(
@@ -352,11 +358,10 @@ def create_interpolation_general_method_tex_string(centering: bool) -> str:
         r"Givet $n+1$ datapunkter, konstruera ett interpolationspolynom $y_n(x)$ av grad $n$"
         + (" centrerat kring punkten med x-värde $m$ " if centering else "")
         + " genom:\n",
-        r"För varje punkt $(x_i, y_i)$ i ditt dataset:" + "\n",
         create_list(
             [
                 (
-                    r"Infoga ekvationen $y_i=c_1"
+                    r"För varje punkt $(x_i, y_i)$ i ditt dataset: Infoga ekvationen $y_i=c_1"
                     + (
                         r"x_i^{n}+c_2x_i^{n-1}"
                         if not centering
@@ -364,7 +369,7 @@ def create_interpolation_general_method_tex_string(centering: bool) -> str:
                     )
                     + r"+...+c_{n+1}$ i ett ekvationssystem"
                 ),
-                r"Lös ekvationssystemet för $c_1$, $c_2$, $...$, $c_{n+1}$. ",
+                r"När alla punkter har en egen ekvation: Lös ekvationssystemet för $c_1$, $c_2$, $...$, $c_{n+1}$. ",
                 "Ditt interpolerade polynom ges nu av funktionen $y_n(x)=c_1"
                 + (
                     "x^n+c_2x"

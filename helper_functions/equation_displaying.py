@@ -1,7 +1,7 @@
 """equation_displaying.py
 Utilities related to displaying equations on the screen."""
 
-from manim import Mobject, MathTex, SurroundingRectangle, BLUE, always_redraw
+from manim import MathTex, SurroundingRectangle, BLUE, always_redraw, BLACK
 from typing import List, Optional, Union
 
 
@@ -10,7 +10,7 @@ def create_equation_with_border(
     border_color: Optional[str] = None,
     border_radius: Optional[float] = None,
     scale: Optional[float] = None,
-) -> List[Mobject]:
+) -> List[Union[SurroundingRectangle, MathTex]]:
     """Creates an equation with a border around it.
 
     :param equation: The equation to display. If passed in list format, the list will be provided as args to the MathTex object.
@@ -36,7 +36,11 @@ def create_equation_with_border(
     generic_polynomial_equation.scale(scale)
     equation_rectangle = always_redraw(
         lambda: SurroundingRectangle(
-            generic_polynomial_equation, color=border_color, corner_radius=border_radius
+            generic_polynomial_equation,
+            color=border_color,
+            corner_radius=border_radius,
+            fill_color=BLACK,
+            fill_opacity=1,
         )
     )
     return [generic_polynomial_equation, equation_rectangle]

@@ -17,6 +17,7 @@ from manim import (
     Write,
     SurroundingRectangle,
     GREEN,
+    ORANGE,
 )
 from manim_slides.slide import ThreeDSlide
 from helper_functions.equation_displaying import create_equation_with_border
@@ -105,7 +106,23 @@ class MethodOfLeastSquaresPartTwo(ThreeDSlide):
         self.remove(matrix_equation_system)
         self.play(FadeIn(matrix_equation_system_with_highlighted_names))
         self.next_slide()
-        # Now, indicate that we multiply the left side with A transponse
+        # Highlight how the system can be written
+        general_matrix_equation_text = r"\vec A\vec x =  \vec b"
+        (
+            general_matrix_equation,
+            general_matrix_equation_border,
+        ) = create_equation_with_border(general_matrix_equation_text)
+        general_matrix_equation_group = VGroup(
+            general_matrix_equation_border, general_matrix_equation
+        )
+        general_matrix_equation_group.next_to(
+            matrix_equation_system_with_highlighted_names, DOWN
+        )
+        self.add(general_matrix_equation_group)
+        self.wait(0.5)
+        self.next_slide()
+        self.remove(general_matrix_equation_group)
+        # Now, indicate that we multiply the left side with A transpose
         matrix_equation_system_with_transpose_indication = MathTex(
             r"\Huge{A^T}\normalsize",
             a_matrix_string,
@@ -116,6 +133,7 @@ class MethodOfLeastSquaresPartTwo(ThreeDSlide):
         )
         self.remove(matrix_equation_system_with_highlighted_names)
         self.add(matrix_equation_system_with_transpose_indication)
+        self.wait(0.5)
         self.next_slide()
         # Now, write out the values of A transpose
         a_matrix_transpose = transpose_matrix(a_matrix_values)
@@ -125,7 +143,7 @@ class MethodOfLeastSquaresPartTwo(ThreeDSlide):
         )
         # Divide matrix equation system in 2 parts to make it display without being tiny tiny
         general_matrix_equation, _ = create_equation_with_border(
-            [r"\vec A\vec x", r" =  \vec b"], scale=1
+            [r"\vec A^T \vec A\vec x", r" =  \vec A^T \vec b"], scale=1
         )  # This will be used to indicate that we don't show the whole equation system in the code below.
         general_matrix_equation.to_corner(UL)
         matrix_equation_highlighting_border = SurroundingRectangle(
@@ -180,12 +198,8 @@ class MethodOfLeastSquaresPartTwo(ThreeDSlide):
         matrix_multiplication_result = MathTex(
             ata_matrix_string, x_matrix_original_string, f"={atb_matrix_string}"
         )
-        self.play(
-            ReplacementTransform(
-                matrix_equation_system_with_transpose_values_part_2,
-                matrix_multiplication_result,
-            )
-        )
+        self.remove(matrix_equation_system_with_transpose_values_part_2)
+        self.play(FadeIn(matrix_multiplication_result))
         self.next_slide()
         # Play animation of solving the system
         loading_spinner = LoadingSpinner(
@@ -208,7 +222,7 @@ class MethodOfLeastSquaresPartTwo(ThreeDSlide):
         )
         # Add disclaimer about rounding
         disclaimer_text = Text(
-            "*värden på konstanter har avrundats till två decimaler."
+            "*värden på koefficienter har avrundats till två decimaler."
         )
         disclaimer_text.scale(DISCLAIMER_TEXT_SCALE)
         disclaimer_text.next_to(solution_equation_system, DOWN)
@@ -242,25 +256,21 @@ class MethodOfLeastSquaresPartTwo(ThreeDSlide):
         # Show the general equation for least squares
         clear_screen(self)
         general_matrix_equation_scale = 2
-        (
-            general_matrix_equation,
-            general_matrix_equation_border,
-        ) = create_equation_with_border(
-            r"\vec A\vec x =  \vec b", scale=general_matrix_equation_scale
-        )
-        general_matrix_equation_group = VGroup(
-            general_matrix_equation, general_matrix_equation_border
-        )
+        general_matrix_equation.scale(general_matrix_equation_scale)
+        general_matrix_equation.move_to([0, 0, 0])
         self.play(GrowFromCenter(general_matrix_equation_group))
         self.next_slide()
         # Create heading and explanation about how the method of least squares works. But it will not be added yet!
         # They are created here for positioning purposes.
         heading, least_squares_explanation = create_method_explanatory_slide(
+            self,
             "Minsta kvadratmetoden",
-            r"Konstruera ett system av ekvationer för att interpolera över önskat antal punkter. (se tidigare i videon)"
+            r"Konstruera ett system av ekvationer för att interpolera över önskat antal punkter. (se tidigare i videon) "
             + r"Skriv om systemet på matrisform, där $\vec A$ är koefficientmatris och $\vec b$ är högerledsmatris."
-            + r"Låt $\vec x$ representera de sökta koefficienterna för interpolationspolynomet du vill skapa."
-            r"Ekvationssystemet som ska lösas ges då av:",
+            + r" Låt $\vec x$ representera de sökta koefficienterna för interpolationspolynomet du vill skapa."
+            r" Ekvationssystemet som ska lösas ges då av:",
+            title_color=ORANGE,
+            play=False,
         )
         # Fade the general matrix equation into general least squares equation
         (
@@ -271,7 +281,7 @@ class MethodOfLeastSquaresPartTwo(ThreeDSlide):
             scale=general_matrix_equation_scale,
         )
         general_least_squares_equation_group = VGroup(
-            general_least_squares_equation, general_least_squares_border
+            general_least_squares_border, general_least_squares_equation
         )
         general_least_squares_equation_group.next_to(least_squares_explanation, DOWN)
         self.play(
@@ -283,6 +293,7 @@ class MethodOfLeastSquaresPartTwo(ThreeDSlide):
         # Define the method of least squares
         play_multiple(self, [heading, least_squares_explanation], Create)
         self.wait(1)  # Needed to make sure the slide is displayed completely
+        self.next_slide()
 
     def interpolation_illustration_positioning_function(
         self, current_generic_equation_system: MathTex, current_iteration: int

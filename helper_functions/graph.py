@@ -63,6 +63,7 @@ class AxesAndGraphHelper:
         gamma: Optional[int] = None,
         is_r2: Optional[bool] = None,
         use_2d_axes_class: Optional[bool] = None,
+        show_graph_labels_on_axes: Optional[List[bool]] = None,
     ) -> None:
         """Creates a graph based on a function.
 
@@ -88,6 +89,9 @@ class AxesAndGraphHelper:
         :param use_2d_axes_class: Forces the axes to 2D by using Axes() instead of ThreeDAxes().
         Note that this removes all the features related to plotting and animating in 3D!! But what it comes with is that
         you can use it with 2D scenes.
+
+        :param show_graph_labels_on_axes: A list indicated what axes (in the format [x,y,z]) to show graph labels on
+        Defaults to [True, True, False]
         """
         if phi is None:
             phi = 0
@@ -99,9 +103,11 @@ class AxesAndGraphHelper:
             interval = DEFAULT_AXES_INTERVALS
         if use_2d_axes_class is None:
             use_2d_axes_class = False
-        # Save all passed arguments to self
+        if show_graph_labels_on_axes is None:
+            show_graph_labels_on_axes = [True, True, False]
         self.scene_reference = scene_reference
         self.interval = interval
+        self.show_graph_labels_on_axes = show_graph_labels_on_axes
         self.x_label = x_label
         self.y_label = y_label
         self.z_label = z_label
@@ -196,9 +202,9 @@ class AxesAndGraphHelper:
             ),  # Suuuper hacky but it works!
         }
         axes_label_kwargs = {
-            "x_label": Text(x_label),
-            "y_label": Text(y_label),
-            "z_label": Text(z_label),
+            "x_label": Text(x_label if self.show_graph_labels_on_axes[0] else ""),
+            "y_label": Text(y_label if self.show_graph_labels_on_axes[1] else ""),
+            "z_label": Text(z_label if self.show_graph_labels_on_axes[2] else ""),
         }
         if not self.use_2d_axes_class:
             self.axes_object = ThreeDAxes(**axes_config_kwargs)

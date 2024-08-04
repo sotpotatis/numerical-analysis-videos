@@ -20,6 +20,7 @@ from manim import (
     BackgroundRectangle,
     BLUE,
     Create,
+    MED_LARGE_BUFF,
 )
 from sympy import lambdify
 from helper_functions.general_utilities import (
@@ -53,13 +54,16 @@ from helper_functions.color_utilities import (
 class Splines(ThreeDSlide):
     # Manually define the positions of the labels that highlight what number
     # the interpolation polynomial is. See plot_spline_polynomial for the usage.
-    POLYNOMIAL_LABEL_POSITIONS = [UP] * 5 + [DOWN] * 5
+    POLYNOMIAL_LABEL_POSITIONS = [DOWN] + [UP] * 4 + [DOWN] * 2 + [UP] + [DOWN] * 2
 
     def construct(self):
         create_logger(self)
         set_title_heading_to(self, "Splines")
         self.axes = AxesAndGraphHelper(
-            self, interval=[[-10, 11], [0, 5]], use_2d_axes_class=True
+            self,
+            interval=[[-10, 11], [0, 5]],
+            use_2d_axes_class=True,
+            show_graph_labels_on_axes=[False, True, False],  # Hide x axis label
         )
         # Demonstrate splines
         add_witch_of_agnesi_points(self, all_evaluated_points, animation_run_time=0)
@@ -109,6 +113,7 @@ class Splines(ThreeDSlide):
             linear_interpolation_plots.append(function_plot)
             linear_interpolation_polynomial_labels.append(function_label)
             all_linear_interpolation_kwargs.append(linear_interpolation_kwargs)
+        self.wait(0.5)
         self.next_slide()
         # Fade out the linear interpolation polynomials. We do so by darkening their color
         self.transform_plot_colors(
@@ -142,6 +147,7 @@ class Splines(ThreeDSlide):
             )
             cubic_interpolation_plots.append(function_plot)
             cubic_interpolation_polynomial_labels.append(function_label)
+        self.wait(0.5)
         self.next_slide()
         # Animate the effect that a cubic interpolation polynomial has on the smoothing of
         # points by changing the color of the cubic interpolation plots to the same color
@@ -170,7 +176,7 @@ class Splines(ThreeDSlide):
             derivatives_equal_strings = []
             # There is one string in the point list that is basically the same except for the prime sign.
             # Automate it.
-            for i in range(1, 3):
+            for i in range(1, 4):
                 derivative_prefix = "^{" + "'" * i + "}"
                 derivatives_equal_strings.append(
                     "$p%s_{%d}(%r)=p%s_{%d}(%r)$"
@@ -223,6 +229,7 @@ class Splines(ThreeDSlide):
                 show_bullet_points_one_by_one=is_first_slide,
                 fade_in=True,
             )
+            self.wait(0.5)
             self.next_slide()
         # Add a text showing that the rules in the bullet point list are generic
         clear_screen(self)
@@ -230,10 +237,11 @@ class Splines(ThreeDSlide):
         and_so_forth_text.scale(2)
         self.play(GrowFromCenter(and_so_forth_text))
         self.next_slide()
+        clear_screen(self)
         # Add some general rules to keep in mind
         general_rules_title = Tex("Minnesregler", color=BLUE)
         general_rules_title.scale(TOP_HEADING_SCALE)
-        general_rules_title.to_edge(UP)
+        general_rules_title.to_edge(UP, buff=MED_LARGE_BUFF)
         general_rules_text = Tex(
             create_list(
                 [
@@ -244,6 +252,8 @@ class Splines(ThreeDSlide):
         )
         general_rules_text.next_to(general_rules_title, DOWN)
         play_multiple(self, [general_rules_title, general_rules_text], Create)
+        self.wait(0.5)
+        self.next_slide()
 
     def transform_plot_colors(
         self,

@@ -73,6 +73,7 @@ def add_witch_of_agnesi_points(
             round_coordinates_to_decimals=2,
             animation_run_time=animation_run_time,
             return_created_objects=True,
+            show_z_coordinate=False,
         )
         # created_objects[0] will always give us the dot object
         all_created_point_objects.append(created_objects[0])
@@ -83,6 +84,8 @@ def set_title_heading_to(
     scene_reference: Union[Slide, ThreeDSlide],
     title: str,
     subtitle: Optional[str] = None,
+    title_scale: Optional[float] = None,
+    subtitle_scale: Optional[float] = None,
 ) -> None:
     """Adds a title slide as a new separate slide
     based on a passed text.
@@ -92,11 +95,21 @@ def set_title_heading_to(
     :param title: The title heading to set.
 
     :param subtitle: Subtitle text if any.
+
+    :param title_scale: Optionally scale down (or up!) the title. By default the scale is 1.
+
+    :param title_scale: Optionally scale down (or up!) the subtitle. By default the scale is 1.
     """
     old_mobjects = scene_reference.mobjects
     clear_screen(scene_reference)
     scene_reference.next_slide()
-    title_frame = create_title_frame(scene_reference, title, subtitle)
+    title_frame = create_title_frame(
+        scene_reference,
+        title,
+        subtitle,
+        title_scale=title_scale,
+        subtitle_scale=subtitle_scale,
+    )
     scene_reference.add(title_frame)
     scene_reference.next_slide()
     scene_reference.remove(title_frame)

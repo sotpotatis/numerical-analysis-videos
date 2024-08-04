@@ -13,6 +13,7 @@ from manim import (
     GREEN,
     RED,
     VGroup,
+    UR,
 )
 
 from helper_functions.equation_displaying import create_equation_with_border
@@ -20,7 +21,10 @@ from helper_functions.graph import SYMBOL_X
 from helper_functions.premade_slides import create_title_frame
 from helper_functions.graph import AxesAndGraphHelper
 from helper_functions.knob.knob import Knob
-from interpolation.shared_constants import INTERPOLATION_DEFAULT_AXES_INTERVAL
+from interpolation.shared_constants import (
+    INTERPOLATION_DEFAULT_AXES_INTERVAL,
+    CORNER_EQUATIONS_SCALE,
+)
 from interpolation.value_tracker_plotting import (
     generate_updater_for_equation_related_to_constant_values,
     generate_updater_for_plot_graph_according_to_constant_values,
@@ -32,17 +36,18 @@ class IntroductionSlide(ThreeDSlide):
 
     def construct(self):
         self.logger = logging.getLogger(__name__)
-        # TITLE SLIDE
+        # Title slide
         title_frame = create_title_frame(self, "Polynominterpolation", "Lektion X")
         self.remove(title_frame)
         self.next_slide()
-        # SLIDE 1: Illustrate generic equation for 1st deg polynomial
+        # Illustrate generic equation for 1st deg polynomial
         # Show generic equation for 1st deg polynomial
         generic_polynomial_equation, equation_rectangle = create_equation_with_border(
             "y=kx+m"
         )
-        self.play(Create(generic_polynomial_equation))
         self.add(equation_rectangle)
+        self.play(Create(generic_polynomial_equation))
+        self.wait(0.5)
         self.next_slide()
         # Highlight the notation that I will be using
         generic_polynomial_equation_group = VGroup(
@@ -53,7 +58,7 @@ class IntroductionSlide(ThreeDSlide):
             new_equation_rectangle,
         ) = create_equation_with_border("y=c_1x+c_2")
         generic_polynomial_equation_alternate_notation_group = VGroup(
-            generic_polynomial_equation_alternate_notation, new_equation_rectangle
+            new_equation_rectangle, generic_polynomial_equation_alternate_notation
         )
         self.play(
             ReplacementTransform(
@@ -62,7 +67,7 @@ class IntroductionSlide(ThreeDSlide):
             )
         )
         self.next_slide()
-        # SLIDE 2: Illustrate parameters for 1st deg polynomial
+        # Illustrate parameters for 1st deg polynomial
         c1 = ValueTracker(1)
         c2 = ValueTracker(0)
         coefficient_value_trackers = [c2, c1]
@@ -126,10 +131,13 @@ class IntroductionSlide(ThreeDSlide):
             first_degree_equation_value_updater
         )
         self.add(coefficient_knobbing_polynomial_plot)
+        self.wait(0.5)
+        self.next_slide()
+        # Show how the coefficients control the plot
         self.animate_coefficient_value_trackers(
             coefficient_value_trackers, coefficient_knobs
         )
-        # SLIDE 3: Illustrate parameters for a 2nd degree polynomial
+        # Illustrate parameters for a 2nd degree polynomial
         self.next_slide()
         self.remove(coefficient_knobbing_polynomial_plot)
         c3 = ValueTracker(0)
@@ -143,13 +151,34 @@ class IntroductionSlide(ThreeDSlide):
             return_generic_equation=True
         )
         self.remove(smaller_generic_polynomial_equation_alternate_notation_group)
-        self.play(Create(second_degree_equation_group))
+        # Show the generic second degree polynomial
+        (
+            generic_second_degree_polynomial_equation,
+            generic_second_degree_polynomial_equation_border,
+        ) = create_equation_with_border("y=c_1x^2+c_2x+c_3x")
+        generic_second_degree_polynomial_equation.move_to([0, 0, 0])
+        generic_second_degree_polynomial_equation_group = VGroup(
+            generic_second_degree_polynomial_equation_border,
+            generic_second_degree_polynomial_equation,
+        )
+        self.play(Create(generic_second_degree_polynomial_equation_group))
+        self.next_slide()
+        generic_second_degree_polynomial_equation.scale(CORNER_EQUATIONS_SCALE)
+        generic_second_degree_polynomial_equation.to_corner(UR)
+        self.play(
+            ReplacementTransform(
+                generic_second_degree_polynomial_equation_group,
+                second_degree_equation_group,
+            )
+        )
         # Add knobs for 2nd degree polynomial. Adjust old knobs to fit new visualization
         c1_knob.min_value = -10
         c1_knob.max_value = 6
         c2_knob.default_value = 1
         c2_knob.min_value = -4
         c2_knob.max_value = 4
+        c1.set_value(c1_knob.default_value)
+        c2.set_value(c2_knob.default_value)
         c3_knob = Knob(
             self,
             c3,
@@ -162,6 +191,7 @@ class IntroductionSlide(ThreeDSlide):
         )
         coefficient_knobs.insert(0, c3_knob)
         self.add(*c3_knob.created_objects)
+        self.wait(0.5)  # Needed for animations to play
         self.next_slide()
         # Create plots for second degree polynomial
         second_degree_polynomial_value_updater = (
@@ -177,6 +207,8 @@ class IntroductionSlide(ThreeDSlide):
         )
         second_degree_equation_group.add_updater(second_degree_equation_value_updater)
         self.add(new_coefficient_knobbing_polynomial_plot)
+        self.wait(0.5)
+        self.next_slide()
         self.animate_coefficient_value_trackers(
             coefficient_value_trackers, coefficient_knobs
         )
