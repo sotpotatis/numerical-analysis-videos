@@ -3,7 +3,7 @@ Contains some functions that can be used to create premade slides.
 """
 
 import logging
-from typing import Optional, List, Tuple
+from typing import Optional, List, Tuple, Union
 from manim import (
     Tex,
     Group,
@@ -17,10 +17,13 @@ from manim import (
     WHITE,
     UP,
     ManimColor,
+    Create,
+    BLUE,
 )
-from manim_slides.slide import ThreeDSlide
+from manim_slides.slide import ThreeDSlide, Slide
 
-from helper_functions.general_utilities import clear_screen
+from helper_functions.general_utilities import clear_screen, play_multiple
+from helper_functions.latex_utilities import create_list
 from helper_functions.text_scales import TOP_HEADING_SCALE
 
 
@@ -140,6 +143,51 @@ def create_bullet_list_and_title_frame(
     return added_objects
 
 
+def create_slide_with_title_and_mobjects(
+    scene_reference: ThreeDSlide,
+    title: str,
+    mobjects: List[Mobject],
+    title_color: Optional[ManimColor] = None,
+    play: Optional[bool] = None,
+) -> List[Mobject]:
+    """See the lovely docstring. A slide with a title and mobjects below.
+
+    :param scene_reference: A reference to the current scene.
+
+    :param title:  The title to show on the slide.
+
+    :param mobjects: Additional Mobjects to add to the slide.
+
+    :param title_color: The color of the title. Default is white.
+
+    :param play: If False, the function will not play (add) the slide, but just return the objects.
+    The coder can then handle the rendering themselves. Defaults to True.
+
+    :returns A list of all the mobjects  in the scene the format [heading, <other added mobjects>]
+    """
+    if title_color is None:
+        title_color = WHITE
+    if play is None:
+        play = True
+    if play:
+        clear_screen(scene_reference)
+    heading = Tex(title, color=title_color)
+    heading.scale(TOP_HEADING_SCALE)
+    heading.to_edge(UP)
+    # Add all mobjects passed to the function and position them below each other
+    prev_mobject = heading
+    for moject_to_add in mobjects:
+        moject_to_add.next_to(prev_mobject, DOWN)
+        prev_mobject = moject_to_add
+    all_mobjects = [heading]
+    all_mobjects.extend(mobjects)
+    if play:
+        play_multiple(scene_reference, all_mobjects, Create)
+        scene_reference.wait(0.5)
+        scene_reference.next_slide()
+    return all_mobjects
+
+
 def create_method_explanatory_slide(
     scene_reference: ThreeDSlide,
     title: str,
@@ -167,29 +215,42 @@ def create_method_explanatory_slide(
     :returns A tuple of the created mobjects in format:
     (title mobject, LaTeX explanation mobject, optional mobjects from extra_mobjects)
     """
-    if title_color is None:
-        title_color = WHITE
     if extra_mobjects is None:
         extra_mobjects = []
-    if play is None:
-        play = True
-    if play:
-        clear_screen(scene_reference)
-    heading = Tex(title, color=title_color)
-    heading.scale(TOP_HEADING_SCALE)
-    heading.to_edge(UP)
     explanation = Tex(explanation_tex)
-    explanation.next_to(heading, DOWN)
-    if play:
-        scene_reference.add(heading, explanation)
-    # Ensure extra Mobjects are positioned in the direction DOWN relative to each other.
-    prev_extra_mobject = explanation
-    for extra_mobject in extra_mobjects:
-        extra_mobject.next_to(prev_extra_mobject, DOWN)
-        prev_extra_mobject = extra_mobject
-        if play:
-            scene_reference.add(extra_mobject)
-    if play:
-        scene_reference.wait(0.5)
-        scene_reference.next_slide()
-    return heading, explanation
+    mobjects_to_add = [explanation]
+    mobjects_to_add.extend(extra_mobjects)
+    created_mobjects = create_slide_with_title_and_mobjects(
+        scene_reference, title, mobjects_to_add, title_color, play
+    )
+    # created_mobjects[0] is the heading
+    return created_mobjects[0], explanation
+
+
+def create_general_rules_slide(
+    scene_reference: Union[Slide, ThreeDSlide],
+    general_rules: List[str],
+    *args,
+    **kwargs,
+) -> List[Mobject]:
+    """Creates a list of general rules. Such list is displayed at the end of an important segment
+    to add a little cheatsheet.
+
+
+    :param scene_reference: A reference to the current scene.
+
+    :param general_rules: A list of general rules as a list of TeX strings.
+
+    :param args: Any arguments to pass to the create_slide_with_title_and_mobjects function.
+
+    :param kwargs: Any keyword arguments to pass to the create_slide_with_title_and_mobjects function.
+    """
+    general_rules_text = Tex(create_list(general_rules))
+    create_slide_with_title_and_mobjects(
+        scene_reference,
+        "Minnesregler",
+        [general_rules_text],
+        *args,
+        title_color=BLUE,
+        **kwargs,
+    )

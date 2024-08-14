@@ -17,6 +17,8 @@ from manim import (
     UR,
     DR,
     Tex,
+    VGroup,
+    UP,
 )
 from manim.utils.color.X11 import BROWN
 from manim_slides.slide import ThreeDSlide
@@ -40,6 +42,8 @@ from interpolation.shared_constants import (
     create_logger,
     set_title_heading_to,
     CORNER_EQUATIONS_SCALE,
+    GENERIC_POLYNOMIAL_EQUATION_DEGREE_2,
+    generate_generic_polynomial_equation,
 )
 
 from helper_functions.text_scales import DISCLAIMER_TEXT_SCALE
@@ -69,11 +73,11 @@ class CenteringExampleSlide(ThreeDSlide):
         self.next_slide()
         axes_interval = [
             [
-                self.CENTERING_POINTS_X_INTERVAL[0] - 5,
+                self.CENTERING_POINTS_X_INTERVAL[0] - 2,
                 self.CENTERING_POINTS_X_INTERVAL[1] + 5,
             ],
             [
-                self.CENTERING_POINTS_Y_INTERVAL[0] - 5,
+                self.CENTERING_POINTS_Y_INTERVAL[0] - 2,
                 self.CENTERING_POINTS_Y_INTERVAL[1] + 5,
             ],
         ]
@@ -89,6 +93,42 @@ class CenteringExampleSlide(ThreeDSlide):
                 dot_color=GRAY,
                 round_coordinates_to_decimals=2,
             )
+        self.wait(0.5)
+        self.next_slide()
+        # Indicate what kind of polynomial we are aiming for
+        (
+            generic_polynomial_equation,
+            generic_polynomial_equation_border,
+        ) = create_equation_with_border(GENERIC_POLYNOMIAL_EQUATION_DEGREE_2, scale=2)
+        generic_polynomial_equation_group = VGroup(
+            generic_polynomial_equation_border, generic_polynomial_equation
+        )
+        # Since an equation similar to generic_polynomial_equation_group is created later, we want to create a positioning
+        # that works with it
+        position_big_generic_polynomial_equation = lambda group: group.to_edge(UP)
+        position_big_generic_polynomial_equation(generic_polynomial_equation_group)
+        original_generic_polynomial_equation_group = (
+            generic_polynomial_equation_group.copy()
+        )
+        self.play(Create(generic_polynomial_equation_group))
+        self.wait(0.5)
+        self.next_slide()
+        (
+            generic_polynomial_equation_smaller,
+            generic_polynomial_equation_border_smaller,
+        ) = create_equation_with_border(
+            GENERIC_POLYNOMIAL_EQUATION_DEGREE_2, scale=CORNER_EQUATIONS_SCALE
+        )
+        generic_polynomial_equation_group_new = VGroup(
+            generic_polynomial_equation_border_smaller,
+            generic_polynomial_equation_smaller,
+        )
+        generic_polynomial_equation_group_new.to_corner(UR)
+        self.play(
+            ReplacementTransform(
+                generic_polynomial_equation_group, generic_polynomial_equation_group_new
+            )
+        )
         self.next_slide()
         # Indicate centered point. Start at the bottom of the screen
         centered_point_indication_arrow_start_y = axes_interval[1][0] + 2
@@ -110,6 +150,61 @@ class CenteringExampleSlide(ThreeDSlide):
             middle_point_mobject, color=RED
         )
         self.play(Create(centered_point_indication_rectangle))
+        self.next_slide()
+        # Indicate the different equation for the second degree polynomial when using centering by brining corner polynomial back
+        self.play(
+            ReplacementTransform(
+                generic_polynomial_equation_group_new,
+                original_generic_polynomial_equation_group,
+            )
+        )
+        self.wait(0.5)  # Otherwise Manim-slides doesn't pick this up as a slide
+        self.next_slide()
+        generic_polynomial_equation_centering_tex_string = (
+            generate_generic_polynomial_equation(
+                degree=2, centered_point=self.CENTERED_POINT
+            )
+        )
+        (
+            generic_polynomial_equation_centering,
+            generic_polynomial_equation_border_centering,
+        ) = create_equation_with_border(
+            generic_polynomial_equation_centering_tex_string, scale=2
+        )
+        generic_polynomial_equation_centering_group = VGroup(
+            generic_polynomial_equation_border_centering,
+            generic_polynomial_equation_centering,
+        )
+        position_big_generic_polynomial_equation(
+            generic_polynomial_equation_centering_group
+        )
+        self.play(
+            ReplacementTransform(
+                original_generic_polynomial_equation_group,
+                generic_polynomial_equation_centering_group,
+            )
+        )
+        self.next_slide()
+        # Scale down generic polynomial equation and move to corner
+        (
+            generic_polynomial_equation_centering_smaller,
+            generic_polynomial_equation_border_centering_smaller,
+        ) = create_equation_with_border(
+            generic_polynomial_equation_centering_tex_string,
+            scale=CORNER_EQUATIONS_SCALE,
+        )
+        generic_polynomial_equation_centering_group_smaller = VGroup(
+            generic_polynomial_equation_border_centering_smaller,
+            generic_polynomial_equation_centering_smaller,
+        )
+        generic_polynomial_equation_centering_group_smaller.to_corner(UR)
+        self.play(
+            ReplacementTransform(
+                generic_polynomial_equation_centering_group,
+                generic_polynomial_equation_centering_group_smaller,
+            )
+        )
+        self.wait(0.5)
         self.next_slide()
         # Solve interpolation coefficients
         interpolation_coefficients = interpolate_over(

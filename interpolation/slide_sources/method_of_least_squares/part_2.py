@@ -57,6 +57,7 @@ from interpolation.slide_sources.method_of_least_squares.shared_constants import
 class MethodOfLeastSquaresPartTwo(ThreeDSlide):
     def construct(self):
         create_logger(self)
+        set_title_heading_to(self, "Minsta kvadratmetoden - räkneexempel")
         self.axes = AxesAndGraphHelper(
             self, interval=[[-10, 10], [0, 5]], use_2d_axes_class=True
         )

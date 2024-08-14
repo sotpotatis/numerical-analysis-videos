@@ -49,6 +49,7 @@ from interpolation.shared_constants import (
     evaluated_points,
     add_witch_of_agnesi_points,
     create_logger,
+    set_title_heading_to,
 )
 from sympy import lambdify
 
@@ -56,6 +57,7 @@ from sympy import lambdify
 class ErrorCalculationDemonstrationSlide(Slide, MovingCameraScene):
     def construct(self):
         create_logger(self)
+        set_title_heading_to(self, "Felskattning")
         self.initial_camera_width = X_AXIS_LENGTH * 1.5
         self.initial_camera_height = Y_AXIS_LENGTH * 1.5
         self.camera.frame.set(
@@ -352,7 +354,7 @@ class ErrorCalculationDemonstrationSlide(Slide, MovingCameraScene):
             [
                 "Konstruera ett interpolationspolynom anpassat till $n$ antal punkter.",
                 "För att skatta felet i punkten $x$, räkna ut polynomets (från steg 1) värde i denna punkt. Kalla detta värde för $p_1(x)$.",
-                "Konstruera ett till interpolationspolynom av en grad högre än steg 1. Detta polynom kommer då behöva gå genom en extra datapunkt jämfört med det i steg 1: $n+1$ datapunkter.",
+                "Konstruera ett till interpolationspolynom av en grad högre än steg 1. Detta polynom kommer då behöva baseras på en extra datapunkt jämfört med det i steg 1: $n+1$ datapunkter.",
                 "För att skatta felet i punkten $x$, räkna även ut polynomets (från steg 3) värde i denna punkt. Kalla detta värde för $p_2(x)$.",
                 "Nu ges en uppskattning av felet i punkten x av $|p_1(x)-p_2(x)|$",
             ],

@@ -1,6 +1,7 @@
 """splines.py
 Demonstrates the concept of splines."""
 
+
 from manim_slides.slide import ThreeDSlide
 from typing import Optional, List, Tuple, Union
 
@@ -18,17 +19,14 @@ from manim import (
     VGroup,
     ParametricFunction,
     BackgroundRectangle,
-    BLUE,
     Create,
-    MED_LARGE_BUFF,
+    YELLOW,
 )
 from sympy import lambdify
 from helper_functions.general_utilities import (
     clear_screen,
-    play_multiple,
 )
 from helper_functions.graph import SYMBOL_X
-from helper_functions.latex_utilities import create_list
 from helper_functions.point_interpolation import (
     interpolation_coefficients_to_function_template,
     linear_spline_interpolation,
@@ -36,6 +34,7 @@ from helper_functions.point_interpolation import (
 )
 from helper_functions.premade_slides import (
     create_bullet_list_and_title_frame,
+    create_general_rules_slide,
 )
 from helper_functions.graph import AxesAndGraphHelper
 from interpolation.shared_constants import (
@@ -196,7 +195,7 @@ class Splines(ThreeDSlide):
             )
             bullet_point_and_title_frame_objects = create_bullet_list_and_title_frame(
                 self,
-                "Karaktäristiskt för splines $p_{%d}$ och $p_{%d}$:"
+                "Karaktäristiskt för tredjegradssplines $p_{%d}$ och $p_{%d}$:"
                 % (p1_number, p2_number),
                 [
                     "Första polynomet $p_{%d}$, går genom $(%r, %r)$ och $(%r, %r)$"
@@ -239,21 +238,101 @@ class Splines(ThreeDSlide):
         self.next_slide()
         clear_screen(self)
         # Add some general rules to keep in mind
-        general_rules_title = Tex("Minnesregler", color=BLUE)
-        general_rules_title.scale(TOP_HEADING_SCALE)
-        general_rules_title.to_edge(UP, buff=MED_LARGE_BUFF)
-        general_rules_text = Tex(
-            create_list(
-                [
-                    r"$\text{Antal (individuella) splines-polynom}=\text{Antal datapunkter}-1$",
-                    r"Antal ekvationer som krävs: $4\cdot \text{Antal datapunkter}$ (för kubiska splines)",
-                ]
-            )
+        create_general_rules_slide(
+            self,
+            [
+                r"$\text{Antal (individuella) splines-polynom}=\text{Antal datapunkter}-1$",
+                r"Antal ekvationer som krävs: $4\cdot \text{Antal datapunkter}$ (för kubiska splines)",
+            ],
         )
-        general_rules_text.next_to(general_rules_title, DOWN)
-        play_multiple(self, [general_rules_title, general_rules_text], Create)
         self.wait(0.5)
         self.next_slide()
+        clear_screen(self)
+        # Add a "word list" about different spline terminology
+        wordlist_heading = Tex("Ordlista", color=YELLOW)
+        wordlist_heading.scale(TOP_HEADING_SCALE)
+        wordlist_heading.to_edge(UP)
+        spline_terminology = [
+            {
+                "words": [
+                    "Linjära splines",
+                    "Förstagradssplines",
+                    "Styckvis linjär interpolation",
+                ],
+                "definition": "Interpolation av grad 1 mellan två punkter i taget.",
+            },
+            {
+                "words": [
+                    "Kubiska splines",
+                    "Tredjegradssplines",
+                    "Styckvis kubisk interpolation",
+                ],
+                "definition": "Interpolation av grad 3 mellan två punkter i taget.",
+            },
+            {
+                "words": ["Naturliga splines"],
+                "definition": """Splines med valet att andraderivatorna är 0.\n\n(i slutet av varje intervall
+                med två punkter)""",
+            },
+        ]
+        self.play(Create(wordlist_heading))
+        last_mobject = wordlist_heading
+        # Base the sizing of the columns on the definition that takes up the most space.
+        # Do this by pre-iterating over the terminology list
+        spline_term_template_columns = [None, None]
+        for spline_term in spline_terminology:
+            spline_term_template_columns_group = self.create_spline_term_object_group(
+                spline_term
+            )
+            spline_term_template_widths = [
+                submobject.width for submobject in spline_term_template_columns_group
+            ]
+            # Update any widths that are bigger than previously registered
+            for i in range(len(spline_term_template_widths)):
+                if (
+                    spline_term_template_columns[i] is None
+                    or spline_term_template_columns[i] < spline_term_template_widths[i]
+                ):
+                    spline_term_template_columns[i] = spline_term_template_widths[i]
+        for spline_term in spline_terminology:
+            spline_term_objects_group = self.create_spline_term_object_group(
+                spline_term, col_widths=spline_term_template_columns
+            )
+            spline_term_objects_group.next_to(last_mobject, DOWN)
+            last_mobject = spline_term_objects_group
+            self.play(Create(spline_term_objects_group))
+            self.wait(0.5)
+            self.next_slide()
+        self.wait(0.5)
+        self.next_slide()
+
+    def create_spline_term_object_group(
+        self, spline_term: dict, *args, **kwargs
+    ) -> VGroup:
+        """The last slide in Splines contain a list of terms and definitions.
+        This function helps create it.
+
+        :param spline_term: A dictionary explaining the spline term. See construct()
+        for the format used.
+
+        Additional args and kwargs will be passed to arrange_in_grid and can be used for
+        column sizing, arrangement, etc"""
+        # Add all words
+        spline_words_objects = []
+        for spline_word in spline_term["words"]:
+            spline_words_objects.append(Tex(spline_word).scale(1.5))
+
+        spline_words_objects_group = VGroup(*spline_words_objects)
+        # Put all words below each other
+        spline_words_objects_group.arrange_in_grid(
+            rows=len(spline_words_objects), cols=1
+        )
+        spline_term_definition = Tex(spline_term["definition"])
+        spline_term_objects_group = VGroup(
+            spline_words_objects_group, spline_term_definition
+        )
+        spline_term_objects_group.arrange_in_grid(rows=1, cols=2, *args, **kwargs)
+        return spline_term_objects_group
 
     def transform_plot_colors(
         self,

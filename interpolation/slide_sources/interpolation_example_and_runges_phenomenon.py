@@ -15,7 +15,10 @@ from manim import (
 )
 
 from helper_functions.equation_displaying import create_equation_with_border
-from helper_functions.general_utilities import clear_screen, addition_string
+from helper_functions.general_utilities import (
+    clear_screen,
+    addition_string,
+)
 from helper_functions.graph import SYMBOL_X
 from helper_functions.latex_utilities import create_cases
 from helper_functions.point_interpolation import (
@@ -23,7 +26,10 @@ from helper_functions.point_interpolation import (
     interpolation_coefficients_to_function_template,
 )
 from helper_functions.graph import AxesAndGraphHelper
-from helper_functions.premade_slides import create_method_explanatory_slide
+from helper_functions.premade_slides import (
+    create_method_explanatory_slide,
+    create_general_rules_slide,
+)
 from helper_functions.text_scales import DISCLAIMER_TEXT_SCALE
 from interpolation.shared_constants import (
     set_title_heading_to,
@@ -61,6 +67,8 @@ class InterpolationExampleAndRungesPhenomenon(ThreeDSlide):
         self.add(equation_rectangle_second_degree)
         polynomial_equation_second_degree.to_corner(UR)
         self.play(Create(polynomial_equation_second_degree))
+        self.wait(0.5)
+        self.next_slide()
         (
             generic_equation_system,
             point_equation_system,
@@ -145,6 +153,17 @@ class InterpolationExampleAndRungesPhenomenon(ThreeDSlide):
             create_interpolation_general_method_tex_string(centering=False),
             title_color=BLUE,
         )
+        clear_screen(self)
+        create_general_rules_slide(
+            self,
+            [
+                r"$\text{Polynomets gradtal }=\text{ Antal datapunkter}-1$",
+                r"$\tiny \text{Antal oberoende ekvationer som krävs för lösa för koefficienter }\normalsize=\text{ Antal datapunkter}-1$",
+                r"\text{Antal konstanter i polynomet }=\text{ Antal datapunkter}",
+            ],
+        )
+        self.wait(0.5)
+        self.next_slide()
         clear_screen(self)
         set_title_heading_to(self, "Runges fenomen")
         # Change axes range to include negative x values as well

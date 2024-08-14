@@ -14,16 +14,25 @@ from manim import (
     RED,
     VGroup,
     UR,
+    MathTex,
+    Tex,
+    BLUE,
+    Write,
+    UP,
+    MED_SMALL_BUFF,
 )
 
 from helper_functions.equation_displaying import create_equation_with_border
+from helper_functions.general_utilities import clear_screen, play_multiple
 from helper_functions.graph import SYMBOL_X
 from helper_functions.premade_slides import create_title_frame
 from helper_functions.graph import AxesAndGraphHelper
 from helper_functions.knob.knob import Knob
+from helper_functions.text_scales import TOP_HEADING_SCALE
 from interpolation.shared_constants import (
     INTERPOLATION_DEFAULT_AXES_INTERVAL,
     CORNER_EQUATIONS_SCALE,
+    generate_generic_polynomial_equation,
 )
 from interpolation.value_tracker_plotting import (
     generate_updater_for_equation_related_to_constant_values,
@@ -212,6 +221,85 @@ class IntroductionSlide(ThreeDSlide):
         self.animate_coefficient_value_trackers(
             coefficient_value_trackers, coefficient_knobs
         )
+        self.next_slide()
+        clear_screen(self)
+        # Provide a list of generic polynomial equations
+        polynomial_names = [
+            "Förstagradspolynom",
+            "Andragradspolynom",
+            "Tredjegradspolynom",
+        ]
+        # Add a title
+        heading = Tex("Generella polynomekvationer", color=BLUE)
+        heading.scale(TOP_HEADING_SCALE)
+        heading.to_edge(UP)
+        self.play(Create(heading))
+        # Add rows showing the polynomial equation and its name
+        last_mobject = heading  # Used for positioning polynomial names below each other
+        for i in range(len(polynomial_names)):
+            polynomial_equation = generate_generic_polynomial_equation(degree=i + 1)
+            polynomial_name = polynomial_names[i]
+            (
+                polynomial_equation_object,
+                polynomial_equation_border,
+            ) = create_equation_with_border(polynomial_equation, scale=2)
+            polynomial_equation_group = VGroup(
+                polynomial_equation_border, polynomial_equation_object
+            )
+            polynomial_name_object = Tex(polynomial_name)
+            polynomial_name_object.scale(1.5)
+            polynomial_formula_objects = VGroup(
+                polynomial_equation_group, polynomial_name_object
+            )
+            polynomial_formula_objects.arrange_in_grid(rows=1, cols=2)
+            polynomial_formula_objects.next_to(last_mobject, DOWN, buff=MED_SMALL_BUFF)
+            last_mobject = polynomial_formula_objects
+            self.play(Create(polynomial_formula_objects))
+            self.wait(0.5)
+            self.next_slide()
+        coefficients_explaination_tex = (
+            r"Där $c_1, c_2,$ osv. är godtyckliga reella konstanter"
+        )
+        coefficients_explaination = Tex(coefficients_explaination_tex)
+        coefficients_explaination.next_to(last_mobject, DOWN)
+        self.play(Write(coefficients_explaination))
+        self.next_slide()
+        # Add vertical dots and generic formula
+        vertical_dots = MathTex(r"\vdots")
+        vertical_dots.scale(2)
+        vertical_dots.next_to(last_mobject, DOWN)
+        general_polynomial_equation_heading = Tex("Generell polynomekvation")
+        general_polynomial_equation_heading.scale(1.5)
+        general_polynomial_equation_heading.next_to(vertical_dots, DOWN)
+        (
+            general_polynomial_equation,
+            generic_polynomial_equation_border,
+        ) = create_equation_with_border(
+            r"y=c_1x^n+c_2x^{(n-1)}+c_3x^{(n-2)}+...+c_{(n+1)}", scale=2
+        )
+        general_polynomial_equation_group = VGroup(
+            generic_polynomial_equation_border, general_polynomial_equation
+        )
+        general_polynomial_equation_group.next_to(
+            general_polynomial_equation_heading, DOWN
+        )
+        self.remove(coefficients_explaination)
+        play_multiple(
+            self,
+            [
+                vertical_dots,
+                general_polynomial_equation_heading,
+                general_polynomial_equation_group,
+            ],
+            Create,
+        )
+        # Define what n means
+        coefficients_explaination_new = Tex(
+            coefficients_explaination_tex + " och $n$ är polynomets gradtal"
+        )
+        coefficients_explaination_new.next_to(general_polynomial_equation, DOWN)
+        self.play(Write(coefficients_explaination_new))
+        self.wait(0.5)
         self.next_slide()
 
     def animate_coefficient_value_trackers(
