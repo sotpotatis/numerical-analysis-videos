@@ -1,7 +1,6 @@
 """splines.py
 Demonstrates the concept of splines."""
 
-
 from manim_slides.slide import ThreeDSlide
 from typing import Optional, List, Tuple, Union
 
