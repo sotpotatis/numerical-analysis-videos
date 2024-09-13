@@ -17,4 +17,16 @@ The order that they should appear from first to last:
 
 If you want to render and present all slides, assuming you are in the root directory of the repository:
 
-`manim-slides render interpolation/all_slides.py IntroductionSlide InterpolationExample Splines -ql`
+(the commands are shown in no particular order)
+
+* `manim-slides render interpolation/slide_sources/introduction.py`
+* `manim-slides render interpolation/slide_sources/centering.py`
+* `manim-slides render interpolation/slide_sources/splines.py`
+* `manim-slides render interpolation/slide_sources/error_calculation_demonstration.py`
+* `manim-slides render interpolation/slide_sources/interpolation_example_and_runges_phenomenon.py`
+* `manim-slides render interpolation/slide_sources/method_of_least_squares/part_1.py`
+* `manim-slides render interpolation/slide_sources/method_of_least_squares/part_2.py`
+
+## Presenting the result
+
+The command to show and present the result of all the slides can be found in `command_to_present_all_slides`
