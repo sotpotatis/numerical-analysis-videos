@@ -222,48 +222,58 @@ class IntroductionSlide(ThreeDSlide):
             coefficient_value_trackers, coefficient_knobs
         )
         self.next_slide()
-        clear_screen(self)
-        # Provide a list of generic polynomial equations
-        polynomial_names = [
-            "Förstagradspolynom",
-            "Andragradspolynom",
-            "Tredjegradspolynom",
-        ]
-        # Add a title
-        heading = Tex("Generella polynomekvationer", color=BLUE)
-        heading.scale(TOP_HEADING_SCALE)
-        heading.to_edge(UP)
-        self.play(Create(heading))
-        # Add rows showing the polynomial equation and its name
-        last_mobject = heading  # Used for positioning polynomial names below each other
-        for i in range(len(polynomial_names)):
-            polynomial_equation = generate_generic_polynomial_equation(degree=i + 1)
-            polynomial_name = polynomial_names[i]
-            (
-                polynomial_equation_object,
-                polynomial_equation_border,
-            ) = create_equation_with_border(polynomial_equation, scale=2)
-            polynomial_equation_group = VGroup(
-                polynomial_equation_border, polynomial_equation_object
+        # The first time around, we want to simply reveal the equations.
+        # The other time, we want an emphasis on the implicit x^0 and x^1.
+        for slide_index in range(2):
+            clear_screen(self)
+            # Provide a list of generic polynomial equations
+            polynomial_names = [
+                "Förstagradspolynom",
+                "Andragradspolynom",
+                "Tredjegradspolynom",
+            ]
+            # Add a title
+            heading = Tex("Generella polynomekvationer", color=BLUE)
+            heading.scale(TOP_HEADING_SCALE)
+            heading.to_edge(UP)
+            self.play(Create(heading))
+            # Add rows showing the polynomial equation and its name
+            last_mobject = (
+                heading  # Used for positioning polynomial names below each other
             )
-            polynomial_name_object = Tex(polynomial_name)
-            polynomial_name_object.scale(1.5)
-            polynomial_formula_objects = VGroup(
-                polynomial_equation_group, polynomial_name_object
+            for i in range(len(polynomial_names)):
+                polynomial_equation = generate_generic_polynomial_equation(
+                    degree=i + 1, show_implicit_powers=slide_index == 1
+                )
+                polynomial_name = polynomial_names[i]
+                (
+                    polynomial_equation_object,
+                    polynomial_equation_border,
+                ) = create_equation_with_border(polynomial_equation, scale=2)
+                polynomial_equation_group = VGroup(
+                    polynomial_equation_border, polynomial_equation_object
+                )
+                polynomial_name_object = Tex(polynomial_name)
+                polynomial_name_object.scale(1.5)
+                polynomial_formula_objects = VGroup(
+                    polynomial_equation_group, polynomial_name_object
+                )
+                polynomial_formula_objects.arrange_in_grid(rows=1, cols=2)
+                polynomial_formula_objects.next_to(
+                    last_mobject, DOWN, buff=MED_SMALL_BUFF
+                )
+                last_mobject = polynomial_formula_objects
+                self.play(Create(polynomial_formula_objects))
+                self.wait(0.5)
+                if slide_index == 0:
+                    self.next_slide()
+            coefficients_explaination_tex = (
+                r"Där $c_1, c_2,$ osv. är godtyckliga reella konstanter"
             )
-            polynomial_formula_objects.arrange_in_grid(rows=1, cols=2)
-            polynomial_formula_objects.next_to(last_mobject, DOWN, buff=MED_SMALL_BUFF)
-            last_mobject = polynomial_formula_objects
-            self.play(Create(polynomial_formula_objects))
-            self.wait(0.5)
+            coefficients_explaination = Tex(coefficients_explaination_tex)
+            coefficients_explaination.next_to(last_mobject, DOWN)
+            self.play(Write(coefficients_explaination))
             self.next_slide()
-        coefficients_explaination_tex = (
-            r"Där $c_1, c_2,$ osv. är godtyckliga reella konstanter"
-        )
-        coefficients_explaination = Tex(coefficients_explaination_tex)
-        coefficients_explaination.next_to(last_mobject, DOWN)
-        self.play(Write(coefficients_explaination))
-        self.next_slide()
         # Add vertical dots and generic formula
         vertical_dots = MathTex(r"\vdots")
         vertical_dots.scale(2)

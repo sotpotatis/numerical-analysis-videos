@@ -64,13 +64,17 @@ class AxesAndGraphHelper:
         is_r2: Optional[bool] = None,
         use_2d_axes_class: Optional[bool] = None,
         show_graph_labels_on_axes: Optional[List[bool]] = None,
+        x_label_styling: Optional[dict] = None,
+        y_label_styling: Optional[dict] = None,
+        z_label_styling: Optional[dict] = None,
     ) -> None:
         """Creates a graph based on a function.
 
 
         :param scene_reference: Reference to the scene the graph should be displayed in.
 
-        :param interval: What interval to render over. In the format [[x_int_start, x_int_end], ..., [z_int_start, z_int_end]]
+        :param interval: What interval to render over. In the format [[x_int_start, x_int_end], ..., [z_int_start, z_int_end]].
+        You can also add a third parameter: [x_int_start, x_int_end, x_int_step], ..., [z_int_start, z_int_end, z_int_step]
 
         :param x_label: Label for the x-axis.
 
@@ -92,6 +96,15 @@ class AxesAndGraphHelper:
 
         :param show_graph_labels_on_axes: A list indicated what axes (in the format [x,y,z]) to show graph labels on
         Defaults to [True, True, False]
+
+        :param x_label_styling Any function to run on the Text() class that creates the x axis label.
+        Only applicable if an x-axis label has been set, of course.
+
+        :param y_label_styling Any function to run on the Text() class that creates the y axis label.
+        Only applicable if a y-axis label has been set, of course.
+
+        :param z_label_styling Any function to run on the Text() class that creates the z axis label.
+        Only applicable if a z-axis label has been set, of course.
         """
         if phi is None:
             phi = 0
@@ -120,7 +133,17 @@ class AxesAndGraphHelper:
         self.added_points = []
         self.axes_and_functions = None
         self.logger = logging.getLogger(__name__)
-        self.create_axes(interval, x_label, y_label, z_label, is_r2, zoom=0.5)
+        self.create_axes(
+            interval,
+            x_label,
+            y_label,
+            z_label,
+            is_r2,
+            zoom=0.5,
+            x_label_styling=x_label_styling,
+            y_label_styling=y_label_styling,
+            z_label_styling=z_label_styling,
+        )
         # Set camera orientation
         if isinstance(self.scene_reference, ThreeDSlide):
             self.scene_reference.move_camera(phi=phi, theta=theta, gamma=gamma)
@@ -134,6 +157,9 @@ class AxesAndGraphHelper:
         is_r2: Optional[bool] = None,
         zoom: Optional[float] = None,
         include_number_plane: Optional[bool] = None,
+        x_label_styling: Optional[callable] = None,
+        y_label_styling: Optional[dict] = None,
+        z_label_styling: Optional[dict] = None,
     ) -> None:
         """Creates axes given configuration parameters.
 
@@ -151,6 +177,15 @@ class AxesAndGraphHelper:
         :param zoom: Set the graph camera zoom if you'd like.
 
         :param include_number_plane: Whether to draw a number plane or not. Defaults to True if unset.
+
+        :param x_label_styling Any function to run on the Text() class that creates the x axis label.
+        Only applicable if an x-axis label has been set, of course.
+
+        :param y_label_styling Any function to run on the Text() class that creates the y axis label.
+        Only applicable if a y-axis label has been set, of course.
+
+        :param z_label_styling Any function to run on the Text() class that creates the z axis label.
+        Only applicable if a z-axis label has been set, of course.
         """
         self.logger.debug(
             f"Creating axes... Rerendering {len(self.rendered_functions)} functions, moving {len(self.added_points)} points."
@@ -186,7 +221,7 @@ class AxesAndGraphHelper:
             ),
             "y_axis_config": AXIS_CONFIG_INCLUDE_NUMBERS,
             "x_axis_config": AXIS_CONFIG_INCLUDE_NUMBERS,
-            # Note: previously I auto-genereated the axis length as commented out below,
+            # Note: previously I auto-generated the axis length as commented out below,
             # but I figured fixing the axis length and letting Manim position the coordinates
             # automatically worked better
             # It is somewhat hacky as the number are set up for my computer - but again - it works
@@ -201,10 +236,20 @@ class AxesAndGraphHelper:
                 [0, 0.1, 1] if is_r2 else z_interval
             ),  # Suuuper hacky but it works!
         }
+        x_label_object = Text(x_label if self.show_graph_labels_on_axes[0] else "")
+        y_label_object = Text(y_label if self.show_graph_labels_on_axes[1] else "")
+        z_label_object = Text(z_label if self.show_graph_labels_on_axes[2] else "")
+        # Apply any transformation functions to style the labels
+        if x_label_styling is not None:
+            x_label_styling(x_label_object)
+        if y_label_styling is not None:
+            y_label_styling(y_label_object)
+        if z_label_styling is not None:
+            z_label_styling(z_label_object)
         axes_label_kwargs = {
-            "x_label": Text(x_label if self.show_graph_labels_on_axes[0] else ""),
-            "y_label": Text(y_label if self.show_graph_labels_on_axes[1] else ""),
-            "z_label": Text(z_label if self.show_graph_labels_on_axes[2] else ""),
+            "x_label": x_label_object,
+            "y_label": y_label_object,
+            "z_label": z_label_object,
         }
         if not self.use_2d_axes_class:
             self.axes_object = ThreeDAxes(**axes_config_kwargs)

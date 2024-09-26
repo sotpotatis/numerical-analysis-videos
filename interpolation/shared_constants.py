@@ -128,7 +128,9 @@ def create_logger(scene_reference: Union[Slide, ThreeDSlide]) -> None:
 
 
 def generate_generic_polynomial_equation(
-    degree: int, centered_point: Optional[float] = None
+    degree: int,
+    centered_point: Optional[float] = None,
+    show_implicit_powers: Optional[bool] = None,
 ) -> List[str]:
     """Generate the TeX equation for a generic polynomial equation
     (y=c_1x^{degree}...). This is not used in the code that much, a TODO is to make more places in the code use it!
@@ -139,8 +141,13 @@ def generate_generic_polynomial_equation(
     :param centered_point: If not None, will generate a centering generic polynomial centered around the point
     with this passed value.
 
+    :param show_implicit_powers: If True, will explicitly print out the x^0 and x^1 which is part of the generic equation even if
+    it is implicit. Default is False.
+
     :returns A list of TeX strings that can be passed to MathTex() as args for example.
     """
+    if show_implicit_powers is None:
+        show_implicit_powers = False
     if centered_point is None:
         x_string = "x"
     else:
@@ -148,13 +155,15 @@ def generate_generic_polynomial_equation(
     latex_strings_list = ["y="]
     x_powers = list(range(1, degree + 1))
     x_powers.reverse()
-    for i in range(degree - 1):
+    for i in range(degree - 1 if not show_implicit_powers else degree + 1):
         latex_strings_list.extend(
             ["c_{%d}{%s}^{%d}" % (i + 1, x_string, x_powers[i]) + "+"]
         )
-    latex_strings_list.extend(
-        ["c_{%d}%s" % (degree, x_string), "+", "c_{%d}" % (degree + 1)]
-    )
+    # Remove the x^0 and x^1 that are implicit if not specifically told to do so
+    if not show_implicit_powers:
+        latex_strings_list.extend(
+            ["c_{%d}%s" % (degree, x_string), "+", "c_{%d}" % (degree + 1)]
+        )
     return latex_strings_list
 
 

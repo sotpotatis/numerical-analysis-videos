@@ -91,10 +91,15 @@ def generate_interpolation_polynomial_equation(
         else:
             point_x_display_text = format_to_parenthesis_if_negative(point_x_rounded)
         if i < len(coefficient_numbers) - 1:
-            equation += "\cdot {%s}^{%d}" % (
-                point_x_display_text,
-                coefficient_powers[i],
-            )
+            # Power to 1 is 1, so we simply leave showing the exponent ^1 out
+            if coefficient_powers[i] != 1:
+                coefficient_power_display = "{%s}^{%d}" % (
+                    point_x_display_text,
+                    coefficient_powers[i],
+                )
+            else:
+                coefficient_power_display = point_x_display_text
+            equation += rf"\cdot {coefficient_power_display}"
             equation += "+" if point_x >= 0 else "-"
     return equation
 
@@ -282,8 +287,8 @@ def create_interpolation_matrix(
         else:
             point_x_display = repr(point_x_rounded)
         point_x_display = format_to_parenthesis_if_negative(point_x_display)
-        a_matrix_new_entries = [1]
-        for i in range(1, polynomial_degree + 1):
+        a_matrix_new_entries = [1, point_x_display]
+        for i in range(2, polynomial_degree + 1):
             a_matrix_new_entries.append("{%s}^{%d}" % (point_x_display, i))
         a_matrix_new_entries.reverse()
         a_matrix.append(a_matrix_new_entries)
