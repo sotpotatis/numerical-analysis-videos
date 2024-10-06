@@ -39,6 +39,7 @@ from interpolation.shared_constants import (
     CORNER_EQUATIONS_SCALE,
     add_witch_of_agnesi_points,
     create_logger,
+    set_title_heading_to,
 )
 from helper_functions.text_scales import DISCLAIMER_TEXT_SCALE
 from interpolation.slide_sources.interpolation_equations import (
