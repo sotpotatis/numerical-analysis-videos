@@ -89,7 +89,7 @@ def generate_interpolation_polynomial_equation(
                     point_difference_from_centered_value
                 )
         else:
-            point_x_display_text = format_to_parenthesis_if_negative(point_x_rounded)
+            point_x_display_text = point_x_rounded
         if i < len(coefficient_numbers) - 1:
             # Power to 1 is 1, so we simply leave showing the exponent ^1 out
             if coefficient_powers[i] != 1:

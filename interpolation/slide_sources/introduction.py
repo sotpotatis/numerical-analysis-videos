@@ -46,7 +46,7 @@ class IntroductionSlide(ThreeDSlide):
     def construct(self):
         self.logger = logging.getLogger(__name__)
         # Title slide
-        title_frame = create_title_frame(self, "Polynominterpolation", "Lektion X")
+        title_frame = create_title_frame(self, "Polynominterpolation")
         self.remove(title_frame)
         self.next_slide()
         # Illustrate generic equation for 1st deg polynomial
@@ -172,8 +172,8 @@ class IntroductionSlide(ThreeDSlide):
         )
         self.play(Create(generic_second_degree_polynomial_equation_group))
         self.next_slide()
-        generic_second_degree_polynomial_equation.scale(CORNER_EQUATIONS_SCALE)
-        generic_second_degree_polynomial_equation.to_corner(UR)
+        generic_second_degree_polynomial_equation_group.scale(CORNER_EQUATIONS_SCALE)
+        generic_second_degree_polynomial_equation_group.to_corner(UR)
         self.play(
             ReplacementTransform(
                 generic_second_degree_polynomial_equation_group,

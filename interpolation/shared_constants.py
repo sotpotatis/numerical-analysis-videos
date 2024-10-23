@@ -155,15 +155,17 @@ def generate_generic_polynomial_equation(
     latex_strings_list = ["y="]
     x_powers = list(range(1, degree + 1))
     x_powers.reverse()
-    for i in range(degree - 1 if not show_implicit_powers else degree + 1):
+    for i in range(degree - 1 if not show_implicit_powers else len(x_powers)):
         latex_strings_list.extend(
-            ["c_{%d}{%s}^{%d}" % (i + 1, x_string, x_powers[i]) + "+"]
+            ["c_{%d}{%s}^{%d}" % (i + 1, x_string, x_powers[i]), "+"]
         )
     # Remove the x^0 and x^1 that are implicit if not specifically told to do so
     if not show_implicit_powers:
-        latex_strings_list.extend(
-            ["c_{%d}%s" % (degree, x_string), "+", "c_{%d}" % (degree + 1)]
-        )
+        latex_strings_list.extend(["c_{%d}%s" % (degree, x_string), "+"])
+    # Add the last variable representing the coefficient
+    latex_strings_list.extend(
+        ["c_{%d} %s" % (degree + 1, r"x^0" if show_implicit_powers else "")]
+    )
     return latex_strings_list
 
 

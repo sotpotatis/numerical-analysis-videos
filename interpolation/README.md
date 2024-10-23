@@ -19,6 +19,7 @@ If you want to render and present all slides, assuming you are in the root direc
 
 (the commands are shown in no particular order)
 
+* `manim-slides render interpolation/slide_sources/overview.py`
 * `manim-slides render interpolation/slide_sources/introduction.py`
 * `manim-slides render interpolation/slide_sources/centering.py`
 * `manim-slides render interpolation/slide_sources/splines.py`
