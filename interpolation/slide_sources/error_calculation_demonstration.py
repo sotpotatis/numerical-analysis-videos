@@ -370,14 +370,14 @@ class ErrorCalculationDemonstrationSlide(Slide, MovingCameraScene):
         # Add error formulas again, in a different format
         error_formulas_text_size = 0.75
         error_formulas_group = VGroup(
-            Tex(r"Absolut fel i punkten $x$ (uppskattning)").scale(
+            Tex(r"Absolut fel i y-värde, i punkten $x$ (uppskattning)").scale(
                 error_formulas_text_size
             ),
             MathTex(r"\left|p_1(x)-p_2(x)\right|"),
-            Tex(r"Relativt fel i punkten $x$ (uppskattning)").scale(
+            Tex(r"Relativt fel i y-värde, i punkten $x$ (uppskattning)").scale(
                 error_formulas_text_size
             ),
-            MathTex(r"\frac{\text{Absolut fel}}{\left|x\right|}"),
+            MathTex(r"\frac{\text{Absolut fel}}{\left|p_2(x)\right|}"),
         )
         error_formulas_group.arrange_in_grid(rows=2, cols=2)
         error_formulas_group.to_corner(UR, buff=0)
