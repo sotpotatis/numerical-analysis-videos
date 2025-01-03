@@ -31,3 +31,8 @@ If you want to render and present all slides, assuming you are in the root direc
 ## Presenting the result
 
 The command to show and present the result of all the slides can be found in `command_to_present_all_slides`
+
+## Slides in HTML
+
+See the directory `interpolation_slides_html` to find the slides in HTML format.
+**Please note that this directory is not connected to any fancy thing like GitHub Actions or similar, and thus it is most likely not the most recent!**

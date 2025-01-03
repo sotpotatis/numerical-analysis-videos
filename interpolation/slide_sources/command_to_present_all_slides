@@ -1,2 +1,2 @@
 # A command to present all slides in interpolation/ starting from the base directory of the repository
-manim-slides present --hide-info-window Overview IntroductionSlide InterpolationExampleAndRungesPhenomenon Splines CenteringExampleSlide ErrorCalculationDemonstrationSlide MethodOfLeastSquaresPartOne MethodOfLeastSquaresPartTwo
+manim-slides present --hide-info-window Overview IntroductionSlide InterpolationExampleAndRungesPhenomenon Splines MethodOfLeastSquaresPartOne MethodOfLeastSquaresPartTwo CenteringExampleSlide ErrorCalculationDemonstrationSlide
